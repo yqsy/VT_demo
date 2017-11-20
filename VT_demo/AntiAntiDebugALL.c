@@ -1,4 +1,4 @@
-﻿#include "ntddk.h"
+#include "ntddk.h"
 #include "dbgtool.h"
 #include "DRRWE.h"
 #include "KernelStruct.h "

@@ -1,4 +1,4 @@
-﻿#include "HVM.h"
+#include "HVM.h"
 #include "../Arch/Intel/EPT.h"
 #include "../Arch/Intel/VMX.h"
 #include "../Util/Utils.h"
