@@ -10,53 +10,53 @@
  PVOID HookKernelApi(IN PVOID ApiAddress, IN PVOID Proxy_ApiAddress, OUT PVOID *Original_ApiAddress, OUT ULONG *PatchSize);
  VOID UnhookKernelApi(IN PVOID ApiAddress, IN PVOID OriCode, IN ULONG PatchSize);
  NTKERNELAPI
-	 BOOLEAN
-	 PsIsSystemThread(
-	 _In_ PETHREAD Thread
-	 );
- ULONG pslp_patch_size30 = 0;		//SwapContext被修改了N字节
- PUCHAR pslp_head_n_byte30 = NULL;	//SwapContext的前N字节数组
- PVOID ori_pslp30 = NULL;			//pfKiAttachProcess的原函数
+     BOOLEAN
+     PsIsSystemThread(
+     _In_ PETHREAD Thread
+     );
+ ULONG pslp_patch_size30 = 0;       //SwapContext被修改了N字节
+ PUCHAR pslp_head_n_byte30 = NULL;  //SwapContext的前N字节数组
+ PVOID ori_pslp30 = NULL;           //pfKiAttachProcess的原函数
  extern __fastcall MySwapContext();
  BOOLEAN __fastcall  IstThreadStub(PETHREAD OldThread, PETHREAD NewThread){
 
-	 if ((PsIsSystemThread(OldThread) == TRUE)&& (PsIsSystemThread(NewThread)==TRUE))
-	 {
-		 return TRUE;
-	 }
+     if ((PsIsSystemThread(OldThread) == TRUE)&& (PsIsSystemThread(NewThread)==TRUE))
+     {
+         return TRUE;
+     }
 
-	 return FALSE;
+     return FALSE;
  
  
  }
  void InitializeHookSwapContext(){
  
-	 jmp_SwapContext_PatchXRstor = SwapContext_PatchXRstor + 0x121;
+     jmp_SwapContext_PatchXRstor = SwapContext_PatchXRstor + 0x121;
 
-	 jmp_SwapContext = SwapContext + 0x29;
-	 jmp_SwapContextTp = SwapContext + 0x1B;
+     jmp_SwapContext = SwapContext + 0x29;
+     jmp_SwapContextTp = SwapContext + 0x1B;
 
  }
  VOID EPTHOOK_SwapContext(){
  
-	 PHHook(SwapContext,MySwapContext);
+     PHHook(SwapContext,MySwapContext);
  
  }
 
  VOID EPTUNHOOK_SwapContext(){
 
 
-	 PHRestore(SwapContext);
+     PHRestore(SwapContext);
 
  }
  VOID HOOKSwapContext(){
-	 pslp_head_n_byte30 = HookKernelApi(SwapContext,
-		 (PVOID)&MySwapContext,
-		 &ori_pslp30,
-		 &pslp_patch_size30);
+     pslp_head_n_byte30 = HookKernelApi(SwapContext,
+         (PVOID)&MySwapContext,
+         &ori_pslp30,
+         &pslp_patch_size30);
  }
  VOID UnHookSwapContext(){
-	 UnhookKernelApi(SwapContext, pslp_head_n_byte30, pslp_patch_size30);
+     UnhookKernelApi(SwapContext, pslp_head_n_byte30, pslp_patch_size30);
 
 
  }

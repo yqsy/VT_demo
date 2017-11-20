@@ -356,66 +356,66 @@ NTSTATUS EptGetPTEForPhysical( IN PEPT_PML4_ENTRY PML4, IN PHYSICAL_ADDRESS phys
 
 BOOLEAN R0_And_R3_HideMEM_Violation(IN PGUEST_STATE GuestState){
 
-	PEPT_DATA pEPT = &GuestState->Vcpu->EPT;
-	ULONG64 pfn = PFN(GuestState->PhysicalAddress.QuadPart);
-	PEPT_VIOLATION_DATA pViolationData = (PEPT_VIOLATION_DATA)&GuestState->ExitQualification;
+    PEPT_DATA pEPT = &GuestState->Vcpu->EPT;
+    ULONG64 pfn = PFN(GuestState->PhysicalAddress.QuadPart);
+    PEPT_VIOLATION_DATA pViolationData = (PEPT_VIOLATION_DATA)&GuestState->ExitQualification;
 
-	PPAGE_HOOK_ENTRY pHookEntry = PHGetHookEntryByPFN(pfn, DATA_PAGE);
-	if (pHookEntry)
-	{
-		/*DPRINT(
-		"HyperBone: CPU %d: %s: Hooked page %s, EIP 0x%p, Linear 0x%p, Physical 0x%p, Violation data 0x%x\n",
-		CPU_IDX, __FUNCTION__,
-		pViolationData->Fields.Execute ? "EXECUTE" : (pViolationData->Fields.Read ? "READ" : "WRITE"),
-		GuestState->GuestRip, GuestState->LinearAddress, GuestState->PhysicalAddress.QuadPart, pViolationData->All
-		);*/
+    PPAGE_HOOK_ENTRY pHookEntry = PHGetHookEntryByPFN(pfn, DATA_PAGE);
+    if (pHookEntry)
+    {
+        /*DPRINT(
+        "HyperBone: CPU %d: %s: Hooked page %s, EIP 0x%p, Linear 0x%p, Physical 0x%p, Violation data 0x%x\n",
+        CPU_IDX, __FUNCTION__,
+        pViolationData->Fields.Execute ? "EXECUTE" : (pViolationData->Fields.Read ? "READ" : "WRITE"),
+        GuestState->GuestRip, GuestState->LinearAddress, GuestState->PhysicalAddress.QuadPart, pViolationData->All
+        );*/
 
-		// Set target host PFN
-		ULONG64 TargetPFN = pHookEntry->DataPagePFN;
-		EPT_ACCESS TargetAccess = EPT_ACCESS_ALL;
+        // Set target host PFN
+        ULONG64 TargetPFN = pHookEntry->DataPagePFN;
+        EPT_ACCESS TargetAccess = EPT_ACCESS_ALL;
 
-		// Executable page for writing
-		if (pViolationData->Fields.Read)
-		{
-			TargetPFN = pHookEntry->DataPagePFN;
-			TargetAccess = EPT_ACCESS_RW;
-		}
-		else if (pViolationData->Fields.Write)
-		{
-			TargetPFN = pHookEntry->CodePagePFN;
-			TargetAccess = EPT_ACCESS_RW;
-		}
-		else if (pViolationData->Fields.Execute)
-		{
-			TargetPFN = pHookEntry->CodePagePFN;
-			TargetAccess = EPT_ACCESS_EXEC;
-		}
-		else
-		{
-			/* DPRINT(
-			"HyperBone: CPU %d: %s: Impossible page 0x%p access 0x%X\n", CPU_IDX, __FUNCTION__,
-			GuestState->PhysicalAddress.QuadPart, pViolationData->All
-			);*/
-		}
+        // Executable page for writing
+        if (pViolationData->Fields.Read)
+        {
+            TargetPFN = pHookEntry->DataPagePFN;
+            TargetAccess = EPT_ACCESS_RW;
+        }
+        else if (pViolationData->Fields.Write)
+        {
+            TargetPFN = pHookEntry->CodePagePFN;
+            TargetAccess = EPT_ACCESS_RW;
+        }
+        else if (pViolationData->Fields.Execute)
+        {
+            TargetPFN = pHookEntry->CodePagePFN;
+            TargetAccess = EPT_ACCESS_EXEC;
+        }
+        else
+        {
+            /* DPRINT(
+            "HyperBone: CPU %d: %s: Impossible page 0x%p access 0x%X\n", CPU_IDX, __FUNCTION__,
+            GuestState->PhysicalAddress.QuadPart, pViolationData->All
+            );*/
+        }
 
-		EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, pfn, TargetAccess, TargetPFN, 1);
-		EPT_CTX ctx = { 0 };
-		__invept(INV_ALL_CONTEXTS, &ctx);
-		//GuestState->Vcpu->HookDispatch.krPentry = pHookEntry;
-		//GuestState->Vcpu->HookDispatch.Rip = GuestState->GuestRip;
-		//ToggleMTF(TRUE);
-	}
-	// Create new identity page map
-	else if (R3_HideMEM_Violation(GuestState) == FALSE)
-	{
-		/*DPRINT(
-		"HyperBone: CPU %d: %s: EPT violation, EIP 0x%p, Linear 0x%p, Physical 0x%p, Violation data 0x%X\n",
-		CPU_IDX, __FUNCTION__,
-		GuestState->GuestRip, GuestState->LinearAddress, GuestState->PhysicalAddress.QuadPart, pViolationData->All
-		);*/
+        EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, pfn, TargetAccess, TargetPFN, 1);
+        EPT_CTX ctx = { 0 };
+        __invept(INV_ALL_CONTEXTS, &ctx);
+        //GuestState->Vcpu->HookDispatch.krPentry = pHookEntry;
+        //GuestState->Vcpu->HookDispatch.Rip = GuestState->GuestRip;
+        //ToggleMTF(TRUE);
+    }
+    // Create new identity page map
+    else if (R3_HideMEM_Violation(GuestState) == FALSE)
+    {
+        /*DPRINT(
+        "HyperBone: CPU %d: %s: EPT violation, EIP 0x%p, Linear 0x%p, Physical 0x%p, Violation data 0x%X\n",
+        CPU_IDX, __FUNCTION__,
+        GuestState->GuestRip, GuestState->LinearAddress, GuestState->PhysicalAddress.QuadPart, pViolationData->All
+        );*/
 
-	//	EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, pfn, EPT_ACCESS_ALL, pfn, 1);
-	}
+    //  EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, pfn, EPT_ACCESS_ALL, pfn, 1);
+    }
 
 }
 
@@ -427,32 +427,32 @@ VOID VmExitEptViolation( IN PGUEST_STATE GuestState )
     ULONG64 pfn = PFN( GuestState->PhysicalAddress.QuadPart );
     PEPT_VIOLATION_DATA pViolationData = (PEPT_VIOLATION_DATA)&GuestState->ExitQualification;
 
-	if (!pViolationData->Fields.PTEWrite && !pViolationData->Fields.PTERead&& !pViolationData->Fields.PTEExecute){
-	
-		EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, pfn, EPT_ACCESS_ALL, pfn, 1);
-		EPT_CTX ctx = { 0 };
-		__invept(INV_ALL_CONTEXTS, &ctx);
-	}
-	else if (pViolationData->Fields.FailType)
-	
-	{
-		const auto read_failure = pViolationData->Fields.Read &&
-			!pViolationData->Fields.PTERead;
-		const auto write_failure = pViolationData->Fields.Write &&
-			!pViolationData->Fields.PTEWrite;
-		const auto exec_failure = pViolationData->Fields.Execute &&
-			!pViolationData->Fields.PTEExecute;
+    if (!pViolationData->Fields.PTEWrite && !pViolationData->Fields.PTERead&& !pViolationData->Fields.PTEExecute){
+    
+        EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, pfn, EPT_ACCESS_ALL, pfn, 1);
+        EPT_CTX ctx = { 0 };
+        __invept(INV_ALL_CONTEXTS, &ctx);
+    }
+    else if (pViolationData->Fields.FailType)
+    
+    {
+        const auto read_failure = pViolationData->Fields.Read &&
+            !pViolationData->Fields.PTERead;
+        const auto write_failure = pViolationData->Fields.Write &&
+            !pViolationData->Fields.PTEWrite;
+        const auto exec_failure = pViolationData->Fields.Execute &&
+            !pViolationData->Fields.PTEExecute;
 
 
-		if (read_failure || write_failure || exec_failure) {
-			R0_And_R3_HideMEM_Violation(GuestState);
+        if (read_failure || write_failure || exec_failure) {
+            R0_And_R3_HideMEM_Violation(GuestState);
 
-		}
-	}
-	else
-	{
+        }
+    }
+    else
+    {
 
-	}
+    }
   
 }
 

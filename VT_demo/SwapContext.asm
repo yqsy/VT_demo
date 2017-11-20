@@ -11,7 +11,7 @@ HVM_SAVE_ALL_NOSEGREGS MACRO
         push rdi
         push rsi
         push rbp
-        push rbp	; rsp
+        push rbp    ; rsp
         push rbx
         push rdx
         push rcx
@@ -23,7 +23,7 @@ HVM_RESTORE_ALL_NOSEGREGS MACRO
         pop rcx
         pop rdx
         pop rbx
-        pop rbp		; rsp
+        pop rbp     ; rsp
         pop rbp
         pop rsi
         pop rdi 
@@ -49,7 +49,7 @@ MySwapContext PROC
      mov     qword ptr [rsp+30h],rbp
        prefetchw [rsi+49h]
        mov     byte ptr [rsp+28h],cl
-	 
+     
     cmp     byte ptr [rsi+49h],0
   
    je jmp_patch
@@ -59,14 +59,14 @@ MySwapContext PROC
 
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	  HVM_SAVE_ALL_NOSEGREGS
-	  mov rcx,rdi
-	  mov rdx,rsi
-	  call IstThreadStub
-	  cmp rax,1
-	  je jmptp
-	  HVM_RESTORE_ALL_NOSEGREGS
-	  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      HVM_SAVE_ALL_NOSEGREGS
+      mov rcx,rdi
+      mov rdx,rsi
+      call IstThreadStub
+      cmp rax,1
+      je jmptp
+      HVM_RESTORE_ALL_NOSEGREGS
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
       mov     byte ptr [rsi+49h],1
         cli
@@ -74,12 +74,12 @@ MySwapContext PROC
      shl     rdx,20h
        or      rax,rdx
 
-	   push qword ptr [jmp_SwapContext]
-	   ret
+       push qword ptr [jmp_SwapContext]
+       ret
 
-	   jmptp:
-	   HVM_RESTORE_ALL_NOSEGREGS
-	   push qword ptr [jmp_SwapContextTp]
-	   ret
+       jmptp:
+       HVM_RESTORE_ALL_NOSEGREGS
+       push qword ptr [jmp_SwapContextTp]
+       ret
 MySwapContext ENDP
 END

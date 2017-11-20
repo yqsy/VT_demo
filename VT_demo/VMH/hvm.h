@@ -21,10 +21,10 @@
 #define KGDT64_R0_CMCODE (6 * 16)       // kernel mode 32-bit code
 
 // this must be synchronized with CmSetBluepillSelectors() (common-asm.asm)
-#define	BP_GDT64_CODE		KGDT64_R0_CODE  // cs
-#define BP_GDT64_DATA		KGDT64_R0_DATA  // ds, es, ss
-#define BP_GDT64_SYS_TSS	KGDT64_SYS_TSS  // tr
-#define BP_GDT64_PCR		KGDT64_R0_DATA  // gs
+#define BP_GDT64_CODE       KGDT64_R0_CODE  // cs
+#define BP_GDT64_DATA       KGDT64_R0_DATA  // ds, es, ss
+#define BP_GDT64_SYS_TSS    KGDT64_SYS_TSS  // tr
+#define BP_GDT64_PCR        KGDT64_R0_DATA  // gs
 
 NTSTATUS HvmSwallowBluepill ();
 

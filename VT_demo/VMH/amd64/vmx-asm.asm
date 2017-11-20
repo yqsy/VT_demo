@@ -2,7 +2,7 @@
 ; Copyright holder: Invisible Things Lab
 ;
 
-EXTERN	 VmExitHandler:PROC
+EXTERN   VmExitHandler:PROC
 
 HVM_SAVE_ALL_NOSEGREGS MACRO
         push r15
@@ -16,7 +16,7 @@ HVM_SAVE_ALL_NOSEGREGS MACRO
         push rdi
         push rsi
         push rbp
-        push rbp	; rsp
+        push rbp    ; rsp
         push rbx
         push rdx
         push rcx
@@ -28,7 +28,7 @@ HVM_RESTORE_ALL_NOSEGREGS MACRO
         pop rcx
         pop rdx
         pop rbx
-        pop rbp		; rsp
+        pop rbp     ; rsp
         pop rbp
         pop rsi
         pop rdi 
@@ -43,35 +43,35 @@ HVM_RESTORE_ALL_NOSEGREGS MACRO
 ENDM
 
 .CODE
-GuestHookExitPoint	Proc
+GuestHookExitPoint  Proc
 
-	HVM_RESTORE_ALL_NOSEGREGS
-	ret
-GuestHookExitPoint 	Endp
+    HVM_RESTORE_ALL_NOSEGREGS
+    ret
+GuestHookExitPoint  Endp
 set_in_cr4 PROC 
-	mov rax,cr4
-	or  rcx,rax
-	mov cr4,rcx
-	ret
+    mov rax,cr4
+    or  rcx,rax
+    mov cr4,rcx
+    ret
 set_in_cr4 ENDP
 
 clear_in_cr4 PROC 
-	mov rax,cr4
-	not rcx
-	and rcx,rax
-	mov cr4,rcx
-	ret
+    mov rax,cr4
+    not rcx
+    and rcx,rax
+    mov cr4,rcx
+    ret
 clear_in_cr4 ENDP
 
 
 VmxRead PROC
-	vmread rax, rcx
-	ret
+    vmread rax, rcx
+    ret
 VmxRead ENDP
 
 VmxVmCall PROC
-	vmcall
-	ret
+    vmcall
+    ret
 VmxVmCall ENDP
 
 
@@ -89,17 +89,17 @@ VmxVmCall ENDP
 
 VmxVmexitHandler PROC   
 
-	HVM_SAVE_ALL_NOSEGREGS
+    HVM_SAVE_ALL_NOSEGREGS
 
-	mov 	rcx, rsp		 ;GuestRegs
-	
-	sub	rsp, 28h
-	call	VmExitHandler
-	add	rsp, 28h
-	
-	HVM_RESTORE_ALL_NOSEGREGS	
-	vmresume
-	ret
+    mov     rcx, rsp         ;GuestRegs
+    
+    sub rsp, 28h
+    call    VmExitHandler
+    add rsp, 28h
+    
+    HVM_RESTORE_ALL_NOSEGREGS   
+    vmresume
+    ret
 
 VmxVmexitHandler ENDP
 

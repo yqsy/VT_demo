@@ -1,24 +1,24 @@
 #include "ntddk.h"
 typedef struct _DbgProcess
 {
-	LIST_ENTRY64 DbgProcessList;
-	PEPROCESS DebugProcess;
-	PEPROCESS Process;
-	POBJECT_TYPE DebugObject;
-	HANDLE DbgHanle;
+    LIST_ENTRY64 DbgProcessList;
+    PEPROCESS DebugProcess;
+    PEPROCESS Process;
+    POBJECT_TYPE DebugObject;
+    HANDLE DbgHanle;
 }DbgProcess, *PDbgProcess;
 
 typedef NTSTATUS(__fastcall *pfNtCreateDebugObject)(
-	OUT PHANDLE DebugObjectHandle,
-	IN ACCESS_MASK DesiredAccess,
-	IN POBJECT_ATTRIBUTES ObjectAttributes,
-	IN ULONG Flags
-	);
+    OUT PHANDLE DebugObjectHandle,
+    IN ACCESS_MASK DesiredAccess,
+    IN POBJECT_ATTRIBUTES ObjectAttributes,
+    IN ULONG Flags
+    );
 
 typedef NTSTATUS(
-	__fastcall*
-	pfNtDebugActiveProcess)(IN HANDLE ProcessHandle,
-	IN HANDLE DebugHandle);
+    __fastcall*
+    pfNtDebugActiveProcess)(IN HANDLE ProcessHandle,
+    IN HANDLE DebugHandle);
 
 typedef
 NTSTATUS(
@@ -42,9 +42,9 @@ pfNtRemoveProcessDebug)(IN HANDLE ProcessHandle,
 IN HANDLE DebugHandle);
 typedef NTSTATUS (__fastcall *pfDbgkpQueueMessage)(IN PEPROCESS Process, IN PETHREAD Thread, IN OUT ULONG64 ApiMsg, IN ULONG Flags, IN ULONG64 TargetDebugObject);
 typedef VOID(__fastcall *pfDbgkMapViewOfSection)(IN PVOID Processs,
-	IN PVOID Section,
-	IN ULONG BaseAddress
-	);
+    IN PVOID Section,
+    IN ULONG BaseAddress
+    );
 typedef VOID(__fastcall *pfDbgkUnMapViewOfSection)(IN PEPROCESS PROCESS, IN PVOID BaseAddress);
 typedef NTSTATUS (__fastcall *pfDbgkOpenProcessDebugPort)(IN PEPROCESS Process, IN KPROCESSOR_MODE PreviousMode, OUT HANDLE *DebugHandle);
 typedef VOID(__fastcall *pfDbgkCopyProcessDebugPort)(IN PEPROCESS Process, IN PEPROCESS Parent,  IN ULONG64 unknow, IN ULONG64 unknow1);

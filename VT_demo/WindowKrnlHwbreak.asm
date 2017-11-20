@@ -18,7 +18,7 @@
         xor     eax,eax
        mov     dr7,rax
        ret     0
-	    myKiSaveDebugRegisterState ENDP
+        myKiSaveDebugRegisterState ENDP
 
 
 
@@ -39,6 +39,6 @@ myKiRestoreDebugRegisterState PROC
        mov     dr6,rax
         mov     dr7,rdx
         ret     0
-		myKiRestoreDebugRegisterState ENDP
+        myKiRestoreDebugRegisterState ENDP
 
 END

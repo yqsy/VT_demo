@@ -1,9 +1,9 @@
 #include "ntddk.h"
 typedef struct _DbgPortList{
-	LIST_ENTRY PortList;
-	ULONG64 DbgPort;
-	UINT8 markdbg;
-	PEPROCESS Process;
+    LIST_ENTRY PortList;
+    ULONG64 DbgPort;
+    UINT8 markdbg;
+    PEPROCESS Process;
 }DbgPortList, *PDbgPortList;
 VOID InitDbgPortList();
 PDbgPortList Port_FindProcessList(PEPROCESS Process, ULONG64 DbgPort);

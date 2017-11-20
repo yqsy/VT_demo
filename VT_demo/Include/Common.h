@@ -3,17 +3,17 @@
 #include <ntddk.h>
 
 typedef struct _R3EPT_HOOK_2{
-	ULONG64 Code_PAGE_VA;
-	ULONG64 Code_PAGE_PFN;
-	ULONG64 Data_PAGE_VA;
-	ULONG64 Data_PAGE_PFN;
-	ULONG64 OriginalPtr;
-	PEPROCESS TargetProcess;
-	ULONG64 TargetCr3;
-	BOOLEAN IsHook;
-	PMDL mdl;
-	ULONG RefCount;
-	LIST_ENTRY PageList;
+    ULONG64 Code_PAGE_VA;
+    ULONG64 Code_PAGE_PFN;
+    ULONG64 Data_PAGE_VA;
+    ULONG64 Data_PAGE_PFN;
+    ULONG64 OriginalPtr;
+    PEPROCESS TargetProcess;
+    ULONG64 TargetCr3;
+    BOOLEAN IsHook;
+    PMDL mdl;
+    ULONG RefCount;
+    LIST_ENTRY PageList;
 }R3EPT_HOOK_2, *PR3EPT_HOOK_2;
 
 #define DPRINT(format, ...)         DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, format, __VA_ARGS__)
@@ -113,8 +113,8 @@ typedef struct _EPT_DATA
 /// </summary>
 typedef struct _PAGE_HOOK_STATE
 {
-	struct _PAGE_HOOK_ENTRY*krPentry;
-	struct _R3EPT_HOOK_2* pEntry;
+    struct _PAGE_HOOK_ENTRY*krPentry;
+    struct _R3EPT_HOOK_2* pEntry;
     ULONG64 Rip;
 } PAGE_HOOK_STATE, *PPAGE_HOOK_STATE;
 

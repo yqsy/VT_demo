@@ -31,16 +31,16 @@ VOID VmxSetupVMCS( IN PVCPU VpData );
 
 ULONG_PTR VmcsRead(IN ULONG VmcsFieldId)
 {
-	ULONG_PTR FieldData = 0;
-	__vmx_vmread(VmcsFieldId, &FieldData);
-	return FieldData;
+    ULONG_PTR FieldData = 0;
+    __vmx_vmread(VmcsFieldId, &FieldData);
+    return FieldData;
 }
 VOID ToggleMTF(IN BOOLEAN State)
 {
-	VMX_CPU_BASED_CONTROLS vmCpuCtlRequested = { 0 };
-	__vmx_vmread(CPU_BASED_VM_EXEC_CONTROL, (size_t*)&vmCpuCtlRequested.All);
-	vmCpuCtlRequested.Fields.MonitorTrapFlag = State;
-	__vmx_vmwrite(CPU_BASED_VM_EXEC_CONTROL, vmCpuCtlRequested.All);
+    VMX_CPU_BASED_CONTROLS vmCpuCtlRequested = { 0 };
+    __vmx_vmread(CPU_BASED_VM_EXEC_CONTROL, (size_t*)&vmCpuCtlRequested.All);
+    vmCpuCtlRequested.Fields.MonitorTrapFlag = State;
+    __vmx_vmwrite(CPU_BASED_VM_EXEC_CONTROL, vmCpuCtlRequested.All);
 }
 
 

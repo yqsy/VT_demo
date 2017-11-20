@@ -42,9 +42,9 @@ SyscallEntryPoint ENDP
 ;
 ; *********************************************************
 KiSystemCall64 PROC
-	mov         rsp, gs:[USERMD_STACK_GS]   ; Usermode RSP
-	swapgs                                  ; Switch to usermode GS
-	jmp         [KiSystemCall64Ptr]         ; Jump back to the old syscall handler
+    mov         rsp, gs:[USERMD_STACK_GS]   ; Usermode RSP
+    swapgs                                  ; Switch to usermode GS
+    jmp         [KiSystemCall64Ptr]         ; Jump back to the old syscall handler
 KiSystemCall64 ENDP
 
 ; *********************************************************

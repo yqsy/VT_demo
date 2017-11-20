@@ -15,8 +15,8 @@
 #define SECONDARY_EXEC_ENABLE_VPID              0x00000020
 #define SECONDARY_EXEC_ENABLE_EPT               0x00000002
 #define CPU_BASED_ACTIVATE_SECONDARY_CONTROLS   0x80000000
-#define CPU_BASED_CR3_LOAD_EXITING		        0x00008000
-#define CPU_BASED_CR3_STORE_EXITING		       0x00010000
+#define CPU_BASED_CR3_LOAD_EXITING              0x00008000
+#define CPU_BASED_CR3_STORE_EXITING            0x00010000
 #define DIVIDE_ERROR_EXCEPTION 0
 #define DEBUG_EXCEPTION 1
 #define NMI_INTERRUPT 2
@@ -44,13 +44,13 @@
 #define SOFTWARE_EXCEPTION 6
 #define OTHER_EVENT 7
 
-#define TRAP_MTF						0
-#define TRAP_DEBUG						1
-#define TRAP_INT3						3
-#define TRAP_INTO						4
-#define TRAP_GP					    13
-#define TRAP_PAGE_FAULT					14
-#define TRAP_INVALID_OP					6
+#define TRAP_MTF                        0
+#define TRAP_DEBUG                      1
+#define TRAP_INT3                       3
+#define TRAP_INTO                       4
+#define TRAP_GP                     13
+#define TRAP_PAGE_FAULT                 14
+#define TRAP_INVALID_OP                 6
 
 
 #define EXIT_REASON_EXCEPTION_NMI 0
@@ -103,7 +103,7 @@
 
 #define EXIT_REASON_TPR_BELOW_THRESHOLD 43
 
-#define VMX_MAX_GUEST_VMEXIT	EXIT_REASON_TPR_BELOW_THRESHOLD
+#define VMX_MAX_GUEST_VMEXIT    EXIT_REASON_TPR_BELOW_THRESHOLD
 
 enum SEGREGS
 {
@@ -136,27 +136,27 @@ enum SEGREGS
 /*
  * Intel CPU features in CR4
  */
-#define X86_CR4_VMXE		0x2000  /* enable VMX */
+#define X86_CR4_VMXE        0x2000  /* enable VMX */
 
 /*
  * Intel CPU  MSR
  */
-#define BTS64(b)					(1i64 << b)
+#define BTS64(b)                    (1i64 << b)
 #define FEATURE_CONTROL_LOCKED        BTS64(0)
 #define FEATURE_CONTROL_VMXON_ENABLED BTS64(2)
 
 /* MSRs & bits used for VMX enabling */
-#define MSR_IA32_FEATURE_CONTROL 	0x03a
-#define MSR_IA32_VMX_BASIC   		0x480
-#define MSR_IA32_VMX_PINBASED_CTLS	0x481
-#define MSR_IA32_VMX_PROCBASED_CTLS	0x482
-#define MSR_IA32_VMX_EXIT_CTLS		0x483
-#define MSR_IA32_VMX_ENTRY_CTLS		0x484
+#define MSR_IA32_FEATURE_CONTROL    0x03a
+#define MSR_IA32_VMX_BASIC          0x480
+#define MSR_IA32_VMX_PINBASED_CTLS  0x481
+#define MSR_IA32_VMX_PROCBASED_CTLS 0x482
+#define MSR_IA32_VMX_EXIT_CTLS      0x483
+#define MSR_IA32_VMX_ENTRY_CTLS     0x484
 #define MSR_IA32_VMX_PROCBASED_CTLS2 0x48B
-#define MSR_IA32_SYSENTER_CS		0x174
-#define MSR_IA32_SYSENTER_ESP		0x175
-#define MSR_IA32_SYSENTER_EIP		0x176
-#define MSR_IA32_DEBUGCTL			0x1d9
+#define MSR_IA32_SYSENTER_CS        0x174
+#define MSR_IA32_SYSENTER_ESP       0x175
+#define MSR_IA32_SYSENTER_EIP       0x176
+#define MSR_IA32_DEBUGCTL           0x1d9
 
 #define MSR_LSTAR           0xC0000082
 
@@ -167,56 +167,56 @@ enum SEGREGS
 typedef struct _DEBUG_DR6_
 {
 
-	unsigned B0 : 1;//Dr0断点访问
-	unsigned B1 : 1;//Dr1断点访问
-	unsigned B2 : 1;//Dr2断点访问
-	unsigned B3 : 1;//Dr3断点访问
-	unsigned Reverted : 9;
-	unsigned BD : 1;//有DEBUG寄存器访问引发的#DB异常
-	unsigned BS : 1;//有单步引发的#DB异常
-	unsigned BT : 1;//有TASK switch 任务切换引发的#DB异常
-	unsigned Reverted2 : 16;
+    unsigned B0 : 1;//Dr0断点访问
+    unsigned B1 : 1;//Dr1断点访问
+    unsigned B2 : 1;//Dr2断点访问
+    unsigned B3 : 1;//Dr3断点访问
+    unsigned Reverted : 9;
+    unsigned BD : 1;//有DEBUG寄存器访问引发的#DB异常
+    unsigned BS : 1;//有单步引发的#DB异常
+    unsigned BT : 1;//有TASK switch 任务切换引发的#DB异常
+    unsigned Reverted2 : 16;
 
 }DEBUG_DR6, *PDEBUG_DR6;
 typedef struct _INTERRUPT_INFO_FIELD {
-	unsigned Vector : 8;
-	unsigned InterruptionType : 3;
-	unsigned ErrorCodeValid : 1;
-	unsigned NMIUnblocking : 1;
-	unsigned Reserved : 18;
-	unsigned Valid : 1;
+    unsigned Vector : 8;
+    unsigned InterruptionType : 3;
+    unsigned ErrorCodeValid : 1;
+    unsigned NMIUnblocking : 1;
+    unsigned Reserved : 18;
+    unsigned Valid : 1;
 } INTERRUPT_INFO_FIELD, *PINTERRUPT_INFO_FIELD;
 typedef struct _INTERRUPT_INJECT_INFO_FIELD{
-	unsigned Vector : 8;
-	unsigned InterruptionType : 3;
-	unsigned DeliverErrorCode : 1;
-	unsigned Reserved : 19;
-	unsigned Valid : 1;
+    unsigned Vector : 8;
+    unsigned InterruptionType : 3;
+    unsigned DeliverErrorCode : 1;
+    unsigned Reserved : 19;
+    unsigned Valid : 1;
 } INTERRUPT_INJECT_INFO_FIELD, *PINTERRUPT_INJECT_INFO_FIELD;
 typedef struct _DEBUG_DR7_
 {
 
-	unsigned L0 : 1; //0 DR0断点#DB
-	unsigned G0 : 1; //1
-	unsigned L1 : 1; //2 DR1断点#DB
-	unsigned G1 : 1; //3
-	unsigned L2 : 1; //4 DR2断点#DB
-	unsigned G2 : 1; //5
-	unsigned L3 : 1; //6 DR3断点#DB
-	unsigned G3 : 1; //7
-	unsigned LE : 1; //8
-	unsigned GE : 1; //9
-	unsigned reserved : 3; //001  //10-11-12
-	unsigned GD : 1; //13...允许对DEBUG寄存器访问产生#DB异常
-	unsigned reserved2 : 2; //00
-	unsigned RW0 : 2;//设置DR0访问类型 00B执行断点 01B写断点 10B IO读/写断点11B 读/写断点
-	unsigned LEN0 : 2;//设置DR0字节长度 00B一个字节 01B WORD 10B QWORD 11B DWORD 
-	unsigned RW1 : 2;//设置DR1访问类型
-	unsigned LEN1 : 2;//设置DR1字节长度
-	unsigned RW2 : 2;//设置DR2访问类型
-	unsigned LEN2 : 2;//设置DR2字节长度
-	unsigned RW3 : 2;//设置DR3访问类型
-	unsigned LEN3 : 2;//设置DR3字节长度
+    unsigned L0 : 1; //0 DR0断点#DB
+    unsigned G0 : 1; //1
+    unsigned L1 : 1; //2 DR1断点#DB
+    unsigned G1 : 1; //3
+    unsigned L2 : 1; //4 DR2断点#DB
+    unsigned G2 : 1; //5
+    unsigned L3 : 1; //6 DR3断点#DB
+    unsigned G3 : 1; //7
+    unsigned LE : 1; //8
+    unsigned GE : 1; //9
+    unsigned reserved : 3; //001  //10-11-12
+    unsigned GD : 1; //13...允许对DEBUG寄存器访问产生#DB异常
+    unsigned reserved2 : 2; //00
+    unsigned RW0 : 2;//设置DR0访问类型 00B执行断点 01B写断点 10B IO读/写断点11B 读/写断点
+    unsigned LEN0 : 2;//设置DR0字节长度 00B一个字节 01B WORD 10B QWORD 11B DWORD 
+    unsigned RW1 : 2;//设置DR1访问类型
+    unsigned LEN1 : 2;//设置DR1字节长度
+    unsigned RW2 : 2;//设置DR2访问类型
+    unsigned LEN2 : 2;//设置DR2字节长度
+    unsigned RW3 : 2;//设置DR3访问类型
+    unsigned LEN3 : 2;//设置DR3字节长度
 
 }DEBUG_DR7, *PDEBUG_DR7;
 

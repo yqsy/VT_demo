@@ -2,9 +2,9 @@
 
 typedef struct{
 
-	struct  ProcessList * up;
-	HANDLE processID;
-	
-	struct  ProcessList * dw;
+    struct  ProcessList * up;
+    HANDLE processID;
+    
+    struct  ProcessList * dw;
 
 }ProcessList, *PProcessList;

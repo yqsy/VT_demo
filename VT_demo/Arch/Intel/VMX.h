@@ -21,8 +21,8 @@ typedef uint64_t u64;
 #define GUEST_ACTIVITY_ACTIVE       0
 #define GUEST_ACTIVITY_HLT          1
 #define X86_EFLAGS_RF_BIT 16 
-#define _BITUL(bit)			(1ul << (bit))
-#define X86_EFLAGS_RF		_BITUL(X86_EFLAGS_RF_BIT)
+#define _BITUL(bit)         (1ul << (bit))
+#define X86_EFLAGS_RF       _BITUL(X86_EFLAGS_RF_BIT)
 //
 // Exit Qualifications for MOV for Control Register Access
 //
@@ -108,7 +108,7 @@ enum _VM_EXIT_REASON
     EXIT_REASON_XSAVES              = 63,   // Guest software attempted to executed XSAVES and exiting was enabled.
     EXIT_REASON_XRSTORS             = 64,   // Guest software attempted to executed XRSTORS and exiting was enabled.
 
-    VMX_MAX_GUEST_VMEXIT	        = 65
+    VMX_MAX_GUEST_VMEXIT            = 65
 };
 
 typedef enum _INV_TYPE

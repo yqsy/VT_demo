@@ -210,71 +210,71 @@ NTSTATUS PHHook( IN PVOID pFunc, IN PVOID pHook )
     return STATUS_SUCCESS;
 }
 NTSTATUS PHHOOK2(IN PVOID pFunc, IN PVOID code,IN ULONG Size){
-	
-		PUCHAR CodePage = NULL;
-		BOOLEAN Newpage = FALSE;
-		PHYSICAL_ADDRESS phys = { 0 };
-		phys.QuadPart = MAXULONG64;
+    
+        PUCHAR CodePage = NULL;
+        BOOLEAN Newpage = FALSE;
+        PHYSICAL_ADDRESS phys = { 0 };
+        phys.QuadPart = MAXULONG64;
 
-		// No CPU support
-		if (!g_Data->Features.EPT || !g_Data->Features.ExecOnlyEPT)
-			return STATUS_NOT_SUPPORTED;
+        // No CPU support
+        if (!g_Data->Features.EPT || !g_Data->Features.ExecOnlyEPT)
+            return STATUS_NOT_SUPPORTED;
 
-		// Check if page is already hooked
-		PPAGE_HOOK_ENTRY pEntry = PHGetHookEntryByPage(pFunc, DATA_PAGE);
-		if (pEntry != NULL)
-		{
-			CodePage = pEntry->CodePageVA;
-		}
-		else
-		{
-			CodePage = MmAllocateContiguousMemory(PAGE_SIZE, phys);
-			Newpage = TRUE;
-		}
+        // Check if page is already hooked
+        PPAGE_HOOK_ENTRY pEntry = PHGetHookEntryByPage(pFunc, DATA_PAGE);
+        if (pEntry != NULL)
+        {
+            CodePage = pEntry->CodePageVA;
+        }
+        else
+        {
+            CodePage = MmAllocateContiguousMemory(PAGE_SIZE, phys);
+            Newpage = TRUE;
+        }
 
-		if (CodePage == NULL)
-			return STATUS_INSUFFICIENT_RESOURCES;
+        if (CodePage == NULL)
+            return STATUS_INSUFFICIENT_RESOURCES;
 
-		PPAGE_HOOK_ENTRY pHookEntry = ExAllocatePoolWithTag(NonPagedPool, sizeof(PAGE_HOOK_ENTRY), HB_POOL_TAG);
-		if (pHookEntry == NULL)
-			return STATUS_INSUFFICIENT_RESOURCES;
+        PPAGE_HOOK_ENTRY pHookEntry = ExAllocatePoolWithTag(NonPagedPool, sizeof(PAGE_HOOK_ENTRY), HB_POOL_TAG);
+        if (pHookEntry == NULL)
+            return STATUS_INSUFFICIENT_RESOURCES;
 
-		RtlZeroMemory(pHookEntry, sizeof(PAGE_HOOK_ENTRY));
-		RtlCopyMemory(CodePage, PAGE_ALIGN(pFunc), PAGE_SIZE);
-		//////////////////
-		pHookEntry->OriginalSize = Size;
-		memcpy(pHookEntry->OriginalData, pFunc,Size);
-	
-		/////////////////
+        RtlZeroMemory(pHookEntry, sizeof(PAGE_HOOK_ENTRY));
+        RtlCopyMemory(CodePage, PAGE_ALIGN(pFunc), PAGE_SIZE);
+        //////////////////
+        pHookEntry->OriginalSize = Size;
+        memcpy(pHookEntry->OriginalData, pFunc,Size);
+    
+        /////////////////
 
-		ULONG_PTR page_offset = (ULONG_PTR)pFunc - (ULONG_PTR)PAGE_ALIGN(pFunc);
+        ULONG_PTR page_offset = (ULONG_PTR)pFunc - (ULONG_PTR)PAGE_ALIGN(pFunc);
 
 
 
-		memcpy(CodePage + page_offset, code, Size);
-		pHookEntry->OriginalPtr = pFunc;
-		pHookEntry->DataPageVA = PAGE_ALIGN(pFunc);
-		pHookEntry->DataPagePFN = PFN(MmGetPhysicalAddress(pFunc).QuadPart);
-		pHookEntry->CodePageVA = CodePage;
-		pHookEntry->CodePagePFN = PFN(MmGetPhysicalAddress(CodePage).QuadPart);
+        memcpy(CodePage + page_offset, code, Size);
+        pHookEntry->OriginalPtr = pFunc;
+        pHookEntry->DataPageVA = PAGE_ALIGN(pFunc);
+        pHookEntry->DataPagePFN = PFN(MmGetPhysicalAddress(pFunc).QuadPart);
+        pHookEntry->CodePageVA = CodePage;
+        pHookEntry->CodePagePFN = PFN(MmGetPhysicalAddress(CodePage).QuadPart);
 
-		// Add to list
-		if (g_PageList.Flink == NULL)
-			InitializeListHead(&g_PageList);
-		InsertTailList(&g_PageList, &pHookEntry->Link);
+        // Add to list
+        if (g_PageList.Flink == NULL)
+            InitializeListHead(&g_PageList);
+        InsertTailList(&g_PageList, &pHookEntry->Link);
 
-		// Create EPT page translation
-		if (Newpage)
-		{
-			HOOK_CONTEXT ctx = { 0 };
-			ctx.Hook = TRUE;
-			ctx.DataPagePFN = pHookEntry->DataPagePFN;
-			ctx.CodePagePFN = pHookEntry->CodePagePFN;
+        // Create EPT page translation
+        if (Newpage)
+        {
+            HOOK_CONTEXT ctx = { 0 };
+            ctx.Hook = TRUE;
+            ctx.DataPagePFN = pHookEntry->DataPagePFN;
+            ctx.CodePagePFN = pHookEntry->CodePagePFN;
 
-			KeGenericCallDpc(PHpHookCallbackDPC, &ctx);
-		}
+            KeGenericCallDpc(PHpHookCallbackDPC, &ctx);
+        }
 
-		return STATUS_SUCCESS;
+        return STATUS_SUCCESS;
 }
 NTSTATUS PHRestore2(IN PVOID pFunc){
 
@@ -300,10 +300,10 @@ NTSTATUS PHRestore( IN PVOID pFunc )
         // TODO: atomic memory patching, i.e. with other CPUs spinlocked
         ULONG_PTR page_offset = (ULONG_PTR)pFunc - (ULONG_PTR)PAGE_ALIGN( pFunc );
         memcpy( (PUCHAR)pHookEntry->CodePageVA + page_offset, pHookEntry->OriginalData, pHookEntry->OriginalSize );
-	
-		RemoveEntryList(&pHookEntry->Link);
-		ExFreePoolWithTag(pHookEntry, HB_POOL_TAG);
-		return STATUS_SUCCESS;
+    
+        RemoveEntryList(&pHookEntry->Link);
+        ExFreePoolWithTag(pHookEntry, HB_POOL_TAG);
+        return STATUS_SUCCESS;
 
     }
     // Swap pages
@@ -317,9 +317,9 @@ NTSTATUS PHRestore( IN PVOID pFunc )
         KeGenericCallDpc( PHpHookCallbackDPC, &ctx );
     }
 
-	MmFreeContiguousMemory(pHookEntry->CodePageVA);
-	RemoveEntryList(&pHookEntry->Link);
-	ExFreePoolWithTag(pHookEntry, HB_POOL_TAG);
+    MmFreeContiguousMemory(pHookEntry->CodePageVA);
+    RemoveEntryList(&pHookEntry->Link);
+    ExFreePoolWithTag(pHookEntry, HB_POOL_TAG);
     
     return STATUS_SUCCESS;
 }

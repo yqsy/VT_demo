@@ -9,8 +9,8 @@
 
 
 NTSTATUS PsLookupProcessByProcessId(
-	_In_ HANDLE ProcessId,
-	_Out_ PEPROCESS *Process);
+    _In_ HANDLE ProcessId,
+    _Out_ PEPROCESS *Process);
 
 
 

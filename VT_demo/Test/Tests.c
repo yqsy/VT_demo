@@ -12,7 +12,7 @@ typedef NTSTATUS( *pfnNtClose )(HANDLE);
 NTSTATUS hkNtClose( HANDLE handle )
 {
     calls1++;
-	
+    
     return ((pfnNtClose)g_NtClose)(handle);
 }
 
@@ -22,7 +22,7 @@ NTSTATUS hkNtClose2( HANDLE handle )
     if (pEntry)
     {
         calls2++;
-		DbgPrint("NTclose2");
+        DbgPrint("NTclose2");
         return ((pfnNtClose)pEntry->OriginalData)(handle);
     }
 
@@ -99,8 +99,8 @@ VOID TestStart( IN BOOLEAN SyscallHook, IN BOOLEAN PageHook1, IN IN BOOLEAN Page
 
 VOID TestStop()
 {
-	PVOID pFn = (PVOID)TestFn;
-	PHRestore(pFn);
+    PVOID pFn = (PVOID)TestFn;
+    PHRestore(pFn);
 }
 
 VOID TestPrintResults()

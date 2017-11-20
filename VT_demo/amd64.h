@@ -94,30 +94,30 @@ typedef struct _INTERRUPT_GATE_DESCRIPTOR
 
 #pragma pack (pop)
 
-#define LA_ACCESSED		0x01
-#define LA_READABLE		0x02    // for code segments
-#define LA_WRITABLE		0x02    // for data segments
-#define LA_CONFORMING	0x04    // for code segments
-#define LA_EXPANDDOWN	0x04    // for data segments
-#define LA_CODE			0x08
-#define LA_STANDARD		0x10
-#define LA_DPL_0		0x00
-#define LA_DPL_1		0x20
-#define LA_DPL_2		0x40
-#define LA_DPL_3		0x60
-#define LA_PRESENT		0x80
+#define LA_ACCESSED     0x01
+#define LA_READABLE     0x02    // for code segments
+#define LA_WRITABLE     0x02    // for data segments
+#define LA_CONFORMING   0x04    // for code segments
+#define LA_EXPANDDOWN   0x04    // for data segments
+#define LA_CODE         0x08
+#define LA_STANDARD     0x10
+#define LA_DPL_0        0x00
+#define LA_DPL_1        0x20
+#define LA_DPL_2        0x40
+#define LA_DPL_3        0x60
+#define LA_PRESENT      0x80
 
-#define LA_LDT64		0x02
-#define LA_ATSS64		0x09
-#define LA_BTSS64		0x0b
-#define LA_CALLGATE64	0x0c
-#define LA_INTGATE64	0x0e
-#define LA_TRAPGATE64	0x0f
+#define LA_LDT64        0x02
+#define LA_ATSS64       0x09
+#define LA_BTSS64       0x0b
+#define LA_CALLGATE64   0x0c
+#define LA_INTGATE64    0x0e
+#define LA_TRAPGATE64   0x0f
 
-#define HA_AVAILABLE	0x01
-#define HA_LONG			0x02
-#define HA_DB			0x04
-#define HA_GRANULARITY	0x08
+#define HA_AVAILABLE    0x01
+#define HA_LONG         0x02
+#define HA_DB           0x04
+#define HA_GRANULARITY  0x08
 
 typedef enum SEGREGS
 {
@@ -179,18 +179,18 @@ typedef enum SEGREGS
 /*
  * Intel CPU features in CR4
  */
-#define X86_CR4_VME		0x0001  /* enable vm86 extensions */
-#define X86_CR4_PVI		0x0002  /* virtual interrupts flag enable */
-#define X86_CR4_TSD		0x0004  /* disable time stamp at ipl 3 */
-#define X86_CR4_DE		0x0008  /* enable debugging extensions */
-#define X86_CR4_PSE		0x0010  /* enable page size extensions */
-#define X86_CR4_PAE		0x0020  /* enable physical address extensions */
-#define X86_CR4_MCE		0x0040  /* Machine check enable */
-#define X86_CR4_PGE		0x0080  /* enable global pages */
-#define X86_CR4_PCE		0x0100  /* enable performance counters at ipl 3 */
-#define X86_CR4_OSFXSR		0x0200  /* enable fast FPU save and restore */
-#define X86_CR4_OSXMMEXCPT	0x0400  /* enable unmasked SSE exceptions */
-#define X86_CR4_VMXE		0x2000  /* enable VMX */
+#define X86_CR4_VME     0x0001  /* enable vm86 extensions */
+#define X86_CR4_PVI     0x0002  /* virtual interrupts flag enable */
+#define X86_CR4_TSD     0x0004  /* disable time stamp at ipl 3 */
+#define X86_CR4_DE      0x0008  /* enable debugging extensions */
+#define X86_CR4_PSE     0x0010  /* enable page size extensions */
+#define X86_CR4_PAE     0x0020  /* enable physical address extensions */
+#define X86_CR4_MCE     0x0040  /* Machine check enable */
+#define X86_CR4_PGE     0x0080  /* enable global pages */
+#define X86_CR4_PCE     0x0100  /* enable performance counters at ipl 3 */
+#define X86_CR4_OSFXSR      0x0200  /* enable fast FPU save and restore */
+#define X86_CR4_OSXMMEXCPT  0x0400  /* enable unmasked SSE exceptions */
+#define X86_CR4_VMXE        0x2000  /* enable VMX */
 
 /*
  * Intel CPU  MSR
@@ -198,17 +198,17 @@ typedef enum SEGREGS
 
  /* MSRs & bits used for VMX enabling */
 
-#define MSR_IA32_VMX_BASIC   		0x480
-#define MSR_IA32_FEATURE_CONTROL 		0x03a
-#define MSR_IA32_VMX_PINBASED_CTLS		0x481
-#define MSR_IA32_VMX_PROCBASED_CTLS		0x482
-#define MSR_IA32_VMX_EXIT_CTLS		0x483
-#define MSR_IA32_VMX_ENTRY_CTLS		0x484
+#define MSR_IA32_VMX_BASIC          0x480
+#define MSR_IA32_FEATURE_CONTROL        0x03a
+#define MSR_IA32_VMX_PINBASED_CTLS      0x481
+#define MSR_IA32_VMX_PROCBASED_CTLS     0x482
+#define MSR_IA32_VMX_EXIT_CTLS      0x483
+#define MSR_IA32_VMX_ENTRY_CTLS     0x484
 
-#define MSR_IA32_SYSENTER_CS		0x174
-#define MSR_IA32_SYSENTER_ESP		0x175
-#define MSR_IA32_SYSENTER_EIP		0x176
-#define MSR_IA32_DEBUGCTL			0x1d9
+#define MSR_IA32_SYSENTER_CS        0x174
+#define MSR_IA32_SYSENTER_ESP       0x175
+#define MSR_IA32_SYSENTER_EIP       0x176
+#define MSR_IA32_DEBUGCTL           0x1d9
 
 /* x86-64 MSR */
 

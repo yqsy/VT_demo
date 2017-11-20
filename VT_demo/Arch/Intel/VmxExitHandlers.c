@@ -123,26 +123,26 @@ pfnExitHandler g_ExitHandler[VMX_MAX_GUEST_VMEXIT] =
 
 static  u64 vmcs_read(u64 what)
 {
-	u64 x;
-	__vmx_vmread(what, &x);
+    u64 x;
+    __vmx_vmread(what, &x);
 
-	return x;
+    return x;
 }
 static  u32 vmcs_read32(u64 what)
 {
-	
-	return (u32)vmcs_read(what);
+    
+    return (u32)vmcs_read(what);
 }
 
 static  int vcpu_read_cpl(void)
 {
-	
-	u32 ar = vmcs_read32(GUEST_SS_AR_BYTES);
-	return VMX_AR_DPL(ar);
+    
+    u32 ar = vmcs_read32(GUEST_SS_AR_BYTES);
+    return VMX_AR_DPL(ar);
 }
 static  BOOLEAN vcpu_check_cpl(int required)
 {
-	return vcpu_read_cpl() <= required;
+    return vcpu_read_cpl() <= required;
 }
 /// <summary>
 /// Advance guest EIP to the next instruction
@@ -150,44 +150,44 @@ static  BOOLEAN vcpu_check_cpl(int required)
 /// <param name="GuestState">Guest VM state</param>
  VOID VmxpAdvanceEIP( IN PGUEST_STATE GuestState )
  {
-	
-	 unsigned long long x;
+    
+     unsigned long long x;
   GuestState->GuestRip += VmcsRead( VM_EXIT_INSTRUCTION_LEN );
 
 
     __vmx_vmwrite( GUEST_RIP, GuestState->GuestRip );
 
-	__vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &x); //堵塞中断
-	if (x & (GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS))
-	{
-		x &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
-		__vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO, x);
-	}
+    __vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &x); //堵塞中断
+    if (x & (GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS))
+    {
+        x &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
+        __vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO, x);
+    }
 
-	
-	
+    
+    
 /*
-	if (GuestState->GuestEFlags.Fields.TF) {
-		
+    if (GuestState->GuestEFlags.Fields.TF) {
+        
 
-		if (vcpu_check_cpl(0)) {
-			__writedr(6, __readdr(6) | DR6_BS | DR6_RTM);
-			__writedr(7, __readdr(7) & ~DR7_GD);
+        if (vcpu_check_cpl(0)) {
+            __writedr(6, __readdr(6) | DR6_BS | DR6_RTM);
+            __writedr(7, __readdr(7) & ~DR7_GD);
 
-			u64 dbg;
-			__vmx_vmread(GUEST_IA32_DEBUGCTL, &dbg);
-			__vmx_vmwrite(GUEST_IA32_DEBUGCTL, dbg & ~DEBUGCTLMSR_LBR);
-		}
-	}
+            u64 dbg;
+            __vmx_vmread(GUEST_IA32_DEBUGCTL, &dbg);
+            __vmx_vmwrite(GUEST_IA32_DEBUGCTL, dbg & ~DEBUGCTLMSR_LBR);
+        }
+    }
 
-	size_t instr_len;
-	__vmx_vmread(VM_EXIT_INSTRUCTION_LEN, &instr_len);
-	__vmx_vmwrite(GUEST_RIP, GuestState->GuestRip + instr_len);
+    size_t instr_len;
+    __vmx_vmread(VM_EXIT_INSTRUCTION_LEN, &instr_len);
+    __vmx_vmwrite(GUEST_RIP, GuestState->GuestRip + instr_len);
 
-	size_t interruptibility;
-	__vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &interruptibility);
-	__vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO,
-		interruptibility & ~(GUEST_INTR_STATE_MOV_SS | GUEST_INTR_STATE_STI));*/
+    size_t interruptibility;
+    __vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &interruptibility);
+    __vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO,
+        interruptibility & ~(GUEST_INTR_STATE_MOV_SS | GUEST_INTR_STATE_STI));*/
 
 
 }
@@ -216,18 +216,18 @@ DECLSPEC_NORETURN EXTERN_C VOID VmxpExitHandler( IN PCONTEXT Context )
     guestContext.PhysicalAddress.QuadPart = VmcsRead( GUEST_PHYSICAL_ADDRESS );
     guestContext.GpRegs = Context;
     guestContext.ExitPending = FALSE;
-	if (guestContext.ExitReason != EXIT_REASON_EXCEPTION_NMI)
-	{
-		if (guestContext.GuestEFlags.Fields.TF == TRUE)//单步下直接注入db异常
-		{
-			VmxInjectEvent(INTERRUPT_HARDWARE_EXCEPTION, VECTOR_DEBUG_EXCEPTION, NULL);
-		}
-	}
-	guestContext.GuestEFlags.Fields.RF = 0; //调试响应#DE
-	__vmx_vmwrite(GUEST_RFLAGS, guestContext.GuestEFlags.All);
+    if (guestContext.ExitReason != EXIT_REASON_EXCEPTION_NMI)
+    {
+        if (guestContext.GuestEFlags.Fields.TF == TRUE)//单步下直接注入db异常
+        {
+            VmxInjectEvent(INTERRUPT_HARDWARE_EXCEPTION, VECTOR_DEBUG_EXCEPTION, NULL);
+        }
+    }
+    guestContext.GuestEFlags.Fields.RF = 0; //调试响应#DE
+    __vmx_vmwrite(GUEST_RFLAGS, guestContext.GuestEFlags.All);
 
     (g_ExitHandler[guestContext.ExitReason])(&guestContext);
-	
+    
     if (guestContext.ExitPending)
     {
         _lgdt( &Vcpu->HostState.SpecialRegisters.Gdtr.Limit );
@@ -277,10 +277,10 @@ VOID VmExitINVD( IN PGUEST_STATE GuestState )
 }
 void CmClearBit32(ULONG* dword, ULONG bit)
 {
-	ULONG mask = 0xFFFFFFFF;
-	ULONG sub = (1 << bit);
-	mask = mask - sub;
-	*dword = *dword & mask;
+    ULONG mask = 0xFFFFFFFF;
+    ULONG sub = (1 << bit);
+    mask = mask - sub;
+    *dword = *dword & mask;
 }
 /// <summary>
 /// CPUID handler
@@ -290,10 +290,10 @@ VOID VmExitCPUID( IN PGUEST_STATE GuestState )
 {
     CPUID cpu_info = { 0 };
     __cpuidex( (int*)&cpu_info, (int)GuestState->GpRegs->Rax, (int)GuestState->GpRegs->Rcx );
-	if ((int)GuestState->GpRegs->Rax==0x1)
-	{
-		CmClearBit32(&cpu_info.ecx, 5);
-	}
+    if ((int)GuestState->GpRegs->Rax==0x1)
+    {
+        CmClearBit32(&cpu_info.ecx, 5);
+    }
     GuestState->GpRegs->Rax = cpu_info.eax;
     GuestState->GpRegs->Rbx = cpu_info.ebx;
     GuestState->GpRegs->Rcx = cpu_info.ecx;
@@ -433,7 +433,7 @@ VOID VmExitCR( IN PGUEST_STATE GuestState )
             __vmx_vmwrite( GUEST_CR3, *regPtr );
             if (g_Data->Features.VPID)
                 __invvpid( INV_ALL_CONTEXTS, &ctx );
-		//	DbgPrint("ProcessNaem:%s   ProcessCr3:%p  LoadCr3:%p", PsGetProcessImageFileName(PsGetCurrentProcess()), *(ULONG64*)((ULONG64)PsGetCurrentProcess() + 0x028), *regPtr);
+        //  DbgPrint("ProcessNaem:%s   ProcessCr3:%p  LoadCr3:%p", PsGetProcessImageFileName(PsGetCurrentProcess()), *(ULONG64*)((ULONG64)PsGetCurrentProcess() + 0x028), *regPtr);
             break;
         case 4:
             __vmx_vmwrite( GUEST_CR4, *regPtr );
@@ -562,7 +562,7 @@ VOID VmExitMSRWrite( IN PGUEST_STATE GuestState )
         // Ignore write if hooked
         /*if(GuestState->Vcpu->OriginalLSTAR == 0)
             __writemsr( MSR_LSTAR, MsrValue.QuadPart );*/
-		//DbgPrint("拦截到写入msr操作@！");
+        //DbgPrint("拦截到写入msr操作@！");
         break;
     case MSR_GS_BASE:
         __vmx_vmwrite( GUEST_GS_BASE, MsrValue.QuadPart );
@@ -669,7 +669,7 @@ VOID VmExitMTF( IN PGUEST_STATE GuestState )
         // REP-prefixed instructions
         if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
             return;
-		//DbgPrint("MTF hp R3\n");
+        //DbgPrint("MTF hp R3\n");
         // Update EPT PTE access
         EptUpdateTableRecursive(
             pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, 
@@ -685,34 +685,34 @@ VOID VmExitMTF( IN PGUEST_STATE GuestState )
         Vcpu->HookDispatch.pEntry = NULL;
         Vcpu->HookDispatch.Rip = 0;
         ToggleMTF( FALSE );
-	}
-	else if (GuestState->Vcpu->HookDispatch.krPentry != NULL)
-	{
-		PVCPU Vcpu = GuestState->Vcpu;
-		PEPT_DATA pEPT = &Vcpu->EPT;
-		PPAGE_HOOK_ENTRY pHook = Vcpu->HookDispatch.krPentry;
+    }
+    else if (GuestState->Vcpu->HookDispatch.krPentry != NULL)
+    {
+        PVCPU Vcpu = GuestState->Vcpu;
+        PEPT_DATA pEPT = &Vcpu->EPT;
+        PPAGE_HOOK_ENTRY pHook = Vcpu->HookDispatch.krPentry;
 
-		// REP-prefixed instructions
-		if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
-			return;
-		//DbgPrint("MTF hp  R0\n");
-		// Update EPT PTE access
-		EptUpdateTableRecursive(
-			pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL,
-			pHook->DataPagePFN,
-			EPT_ACCESS_EXEC,
-			pHook->CodePagePFN, 1
-			);
+        // REP-prefixed instructions
+        if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
+            return;
+        //DbgPrint("MTF hp  R0\n");
+        // Update EPT PTE access
+        EptUpdateTableRecursive(
+            pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL,
+            pHook->DataPagePFN,
+            EPT_ACCESS_EXEC,
+            pHook->CodePagePFN, 1
+            );
 
-		// Rely on page cache if split method is used
-		/*EPT_CTX ctx = { 0 };
-		__invept( INV_ALL_CONTEXTS, &ctx );*/
+        // Rely on page cache if split method is used
+        /*EPT_CTX ctx = { 0 };
+        __invept( INV_ALL_CONTEXTS, &ctx );*/
 
-		Vcpu->HookDispatch.krPentry = NULL;
-		Vcpu->HookDispatch.Rip = 0;
-		ToggleMTF(FALSE);
-	}
-	
+        Vcpu->HookDispatch.krPentry = NULL;
+        Vcpu->HookDispatch.Rip = 0;
+        ToggleMTF(FALSE);
+    }
+    
 }
 
 /// <summary>
