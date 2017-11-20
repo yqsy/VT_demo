@@ -1,10 +1,10 @@
 #include "ntddk.h"
 
-typedef struct{
+typedef struct {
 
-    struct  ProcessList * up;
-    HANDLE processID;
-    
-    struct  ProcessList * dw;
+  struct ProcessList *up;
+  HANDLE processID;
 
-}ProcessList, *PProcessList;
+  struct ProcessList *dw;
+
+} ProcessList, *PProcessList;

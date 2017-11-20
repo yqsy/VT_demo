@@ -22,38 +22,37 @@ Environment:
 
 #include "VMX.h"
 
+#include "../../Hooks/PageHook.h"
+#include "../../Include/CPU.h"
 #include "EPT.h"
 #include "VmxEvent.h"
-#include "../../Include/CPU.h"
-#include "../../Hooks/PageHook.h"
-NTKERNELAPI char* PsGetProcessImageFileName(PEPROCESS Process);
-VOID VmExitUnknown( IN PGUEST_STATE GuestState );
-VOID VmExitINVD( IN PGUEST_STATE GuestState );
-VOID VmExitCPUID( IN PGUEST_STATE GuestState );
-VOID VmExitRdtsc( IN PGUEST_STATE GuestState );
-VOID VmExitRdtscp( IN PGUEST_STATE GuestState );
-VOID VmExitXSETBV( IN PGUEST_STATE GuestState );
-VOID VmExitVMOP( IN PGUEST_STATE GuestState );
+NTKERNELAPI char *PsGetProcessImageFileName(PEPROCESS Process);
+VOID VmExitUnknown(IN PGUEST_STATE GuestState);
+VOID VmExitINVD(IN PGUEST_STATE GuestState);
+VOID VmExitCPUID(IN PGUEST_STATE GuestState);
+VOID VmExitRdtsc(IN PGUEST_STATE GuestState);
+VOID VmExitRdtscp(IN PGUEST_STATE GuestState);
+VOID VmExitXSETBV(IN PGUEST_STATE GuestState);
+VOID VmExitVMOP(IN PGUEST_STATE GuestState);
 
-VOID VmExitVmCall( IN PGUEST_STATE GuestState );
+VOID VmExitVmCall(IN PGUEST_STATE GuestState);
 
-VOID VmExitCR( IN PGUEST_STATE GuestState );
-VOID VmExitMSRRead( IN PGUEST_STATE GuestState );
-VOID VmExitMSRWrite( IN PGUEST_STATE GuestState );
+VOID VmExitCR(IN PGUEST_STATE GuestState);
+VOID VmExitMSRRead(IN PGUEST_STATE GuestState);
+VOID VmExitMSRWrite(IN PGUEST_STATE GuestState);
 
-VOID VmExitEvent( IN PGUEST_STATE GuestState );
-VOID VmExitMTF( IN PGUEST_STATE GuestState );
+VOID VmExitEvent(IN PGUEST_STATE GuestState);
+VOID VmExitMTF(IN PGUEST_STATE GuestState);
 
-VOID VmExitEptViolation( IN PGUEST_STATE GuestState );
-VOID VmExitEptMisconfig( IN PGUEST_STATE GuestState );
+VOID VmExitEptViolation(IN PGUEST_STATE GuestState);
+VOID VmExitEptMisconfig(IN PGUEST_STATE GuestState);
 
-VOID VmExitStartFailed( IN PGUEST_STATE GuestState );
-VOID VmExitTripleFault( IN PGUEST_STATE GuestState );
+VOID VmExitStartFailed(IN PGUEST_STATE GuestState);
+VOID VmExitTripleFault(IN PGUEST_STATE GuestState);
 
 // Handlers table
-typedef VOID( *pfnExitHandler )(IN PGUEST_STATE GuestState);
-pfnExitHandler g_ExitHandler[VMX_MAX_GUEST_VMEXIT] =
-{
+typedef VOID (*pfnExitHandler)(IN PGUEST_STATE GuestState);
+pfnExitHandler g_ExitHandler[VMX_MAX_GUEST_VMEXIT] = {
     VmExitEvent,        // 00 EXIT_REASON_EXCEPTION_NMI
     VmExitUnknown,      // 01 EXIT_REASON_EXTERNAL_INTERRUPT
     VmExitTripleFault,  // 02 EXIT_REASON_TRIPLE_FAULT
@@ -121,627 +120,588 @@ pfnExitHandler g_ExitHandler[VMX_MAX_GUEST_VMEXIT] =
     VmExitUnknown       // 64 EXIT_REASON_XRSTORS
 };
 
-static  u64 vmcs_read(u64 what)
-{
-    u64 x;
-    __vmx_vmread(what, &x);
+static u64 vmcs_read(u64 what) {
+  u64 x;
+  __vmx_vmread(what, &x);
 
-    return x;
+  return x;
 }
-static  u32 vmcs_read32(u64 what)
-{
-    
-    return (u32)vmcs_read(what);
-}
+static u32 vmcs_read32(u64 what) { return (u32)vmcs_read(what); }
 
-static  int vcpu_read_cpl(void)
-{
-    
-    u32 ar = vmcs_read32(GUEST_SS_AR_BYTES);
-    return VMX_AR_DPL(ar);
+static int vcpu_read_cpl(void) {
+
+  u32 ar = vmcs_read32(GUEST_SS_AR_BYTES);
+  return VMX_AR_DPL(ar);
 }
-static  BOOLEAN vcpu_check_cpl(int required)
-{
-    return vcpu_read_cpl() <= required;
+static BOOLEAN vcpu_check_cpl(int required) {
+  return vcpu_read_cpl() <= required;
 }
 /// <summary>
 /// Advance guest EIP to the next instruction
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
- VOID VmxpAdvanceEIP( IN PGUEST_STATE GuestState )
- {
-    
-     unsigned long long x;
-  GuestState->GuestRip += VmcsRead( VM_EXIT_INSTRUCTION_LEN );
+VOID VmxpAdvanceEIP(IN PGUEST_STATE GuestState) {
 
+  unsigned long long x;
+  GuestState->GuestRip += VmcsRead(VM_EXIT_INSTRUCTION_LEN);
 
-    __vmx_vmwrite( GUEST_RIP, GuestState->GuestRip );
+  __vmx_vmwrite(GUEST_RIP, GuestState->GuestRip);
 
-    __vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &x); //堵塞中断
-    if (x & (GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS))
-    {
-        x &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
-        __vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO, x);
-    }
+  __vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &x); //堵塞中断
+  if (x & (GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS)) {
+    x &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
+    __vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO, x);
+  }
 
-    
-    
-/*
-    if (GuestState->GuestEFlags.Fields.TF) {
-        
+  /*
+      if (GuestState->GuestEFlags.Fields.TF) {
+          
 
-        if (vcpu_check_cpl(0)) {
-            __writedr(6, __readdr(6) | DR6_BS | DR6_RTM);
-            __writedr(7, __readdr(7) & ~DR7_GD);
+          if (vcpu_check_cpl(0)) {
+              __writedr(6, __readdr(6) | DR6_BS | DR6_RTM);
+              __writedr(7, __readdr(7) & ~DR7_GD);
 
-            u64 dbg;
-            __vmx_vmread(GUEST_IA32_DEBUGCTL, &dbg);
-            __vmx_vmwrite(GUEST_IA32_DEBUGCTL, dbg & ~DEBUGCTLMSR_LBR);
-        }
-    }
+              u64 dbg;
+              __vmx_vmread(GUEST_IA32_DEBUGCTL, &dbg);
+              __vmx_vmwrite(GUEST_IA32_DEBUGCTL, dbg & ~DEBUGCTLMSR_LBR);
+          }
+      }
 
-    size_t instr_len;
-    __vmx_vmread(VM_EXIT_INSTRUCTION_LEN, &instr_len);
-    __vmx_vmwrite(GUEST_RIP, GuestState->GuestRip + instr_len);
+      size_t instr_len;
+      __vmx_vmread(VM_EXIT_INSTRUCTION_LEN, &instr_len);
+      __vmx_vmwrite(GUEST_RIP, GuestState->GuestRip + instr_len);
 
-    size_t interruptibility;
-    __vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &interruptibility);
-    __vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO,
-        interruptibility & ~(GUEST_INTR_STATE_MOV_SS | GUEST_INTR_STATE_STI));*/
-
-
+      size_t interruptibility;
+      __vmx_vmread(GUEST_INTERRUPTIBILITY_INFO, &interruptibility);
+      __vmx_vmwrite(GUEST_INTERRUPTIBILITY_INFO,
+          interruptibility & ~(GUEST_INTR_STATE_MOV_SS |
+     GUEST_INTR_STATE_STI));*/
 }
 
 /// <summary>
 /// VM Exit entry point
 /// </summary>
 /// <param name="Context">Guest registers</param>
-DECLSPEC_NORETURN EXTERN_C VOID VmxpExitHandler( IN PCONTEXT Context )
-{
-    GUEST_STATE guestContext = { 0 };
+DECLSPEC_NORETURN EXTERN_C VOID VmxpExitHandler(IN PCONTEXT Context) {
+  GUEST_STATE guestContext = {0};
 
-    KeRaiseIrql( HIGH_LEVEL, &guestContext.GuestIrql );
+  KeRaiseIrql(HIGH_LEVEL, &guestContext.GuestIrql);
 
-    Context->Rcx = *(PULONG64)((ULONG_PTR)Context - sizeof( Context->Rcx ));
+  Context->Rcx = *(PULONG64)((ULONG_PTR)Context - sizeof(Context->Rcx));
 
-    PVCPU Vcpu = &g_Data->cpu_data[CPU_IDX];
+  PVCPU Vcpu = &g_Data->cpu_data[CPU_IDX];
 
-    guestContext.Vcpu = Vcpu;
-    guestContext.GuestEFlags.All = VmcsRead( GUEST_RFLAGS );
-    guestContext.GuestRip = VmcsRead( GUEST_RIP );
-    guestContext.GuestRsp = VmcsRead( GUEST_RSP );
-    guestContext.ExitReason = VmcsRead( VM_EXIT_REASON ) & 0xFFFF;
-    guestContext.ExitQualification = VmcsRead( EXIT_QUALIFICATION );
-    guestContext.LinearAddress = VmcsRead( GUEST_LINEAR_ADDRESS );
-    guestContext.PhysicalAddress.QuadPart = VmcsRead( GUEST_PHYSICAL_ADDRESS );
-    guestContext.GpRegs = Context;
-    guestContext.ExitPending = FALSE;
-    if (guestContext.ExitReason != EXIT_REASON_EXCEPTION_NMI)
+  guestContext.Vcpu = Vcpu;
+  guestContext.GuestEFlags.All = VmcsRead(GUEST_RFLAGS);
+  guestContext.GuestRip = VmcsRead(GUEST_RIP);
+  guestContext.GuestRsp = VmcsRead(GUEST_RSP);
+  guestContext.ExitReason = VmcsRead(VM_EXIT_REASON) & 0xFFFF;
+  guestContext.ExitQualification = VmcsRead(EXIT_QUALIFICATION);
+  guestContext.LinearAddress = VmcsRead(GUEST_LINEAR_ADDRESS);
+  guestContext.PhysicalAddress.QuadPart = VmcsRead(GUEST_PHYSICAL_ADDRESS);
+  guestContext.GpRegs = Context;
+  guestContext.ExitPending = FALSE;
+  if (guestContext.ExitReason != EXIT_REASON_EXCEPTION_NMI) {
+    if (guestContext.GuestEFlags.Fields.TF == TRUE) //单步下直接注入db异常
     {
-        if (guestContext.GuestEFlags.Fields.TF == TRUE)//单步下直接注入db异常
-        {
-            VmxInjectEvent(INTERRUPT_HARDWARE_EXCEPTION, VECTOR_DEBUG_EXCEPTION, NULL);
-        }
+      VmxInjectEvent(INTERRUPT_HARDWARE_EXCEPTION, VECTOR_DEBUG_EXCEPTION,
+                     NULL);
     }
-    guestContext.GuestEFlags.Fields.RF = 0; //调试响应#DE
-    __vmx_vmwrite(GUEST_RFLAGS, guestContext.GuestEFlags.All);
+  }
+  guestContext.GuestEFlags.Fields.RF = 0; //调试响应#DE
+  __vmx_vmwrite(GUEST_RFLAGS, guestContext.GuestEFlags.All);
 
-    (g_ExitHandler[guestContext.ExitReason])(&guestContext);
-    
-    if (guestContext.ExitPending)
-    {
-        _lgdt( &Vcpu->HostState.SpecialRegisters.Gdtr.Limit );
-        __lidt( &Vcpu->HostState.SpecialRegisters.Idtr.Limit );
+  (g_ExitHandler[guestContext.ExitReason])(&guestContext);
 
-        __writecr3( VmcsRead( GUEST_CR3 ) );
+  if (guestContext.ExitPending) {
+    _lgdt(&Vcpu->HostState.SpecialRegisters.Gdtr.Limit);
+    __lidt(&Vcpu->HostState.SpecialRegisters.Idtr.Limit);
 
-        Context->Rsp = guestContext.GuestRsp;
-        Context->Rip = (ULONG64)guestContext.GuestRip;
+    __writecr3(VmcsRead(GUEST_CR3));
 
-        __vmx_off();
-        Vcpu->VmxState = VMX_STATE_OFF;
-    }
-    else
-    {
-        Context->Rsp += sizeof( Context->Rcx );
-        Context->Rip = (ULONG64)VmxpResume;
-    }
+    Context->Rsp = guestContext.GuestRsp;
+    Context->Rip = (ULONG64)guestContext.GuestRip;
 
-    KeLowerIrql( guestContext.GuestIrql );
-    RtlRestoreContext( Context, NULL );
+    __vmx_off();
+    Vcpu->VmxState = VMX_STATE_OFF;
+  } else {
+    Context->Rsp += sizeof(Context->Rcx);
+    Context->Rip = (ULONG64)VmxpResume;
+  }
+
+  KeLowerIrql(guestContext.GuestIrql);
+  RtlRestoreContext(Context, NULL);
 }
 
 /// <summary>
 /// Default handler
 /// </summary>
 /// <param name="GuestRegs">Guest VM state</param>
-VOID VmExitUnknown( IN PGUEST_STATE GuestState )
-{
-    DPRINT( "HyperBone: Unhandled exit reason 0x%llX, guest EIP 0x%p\n", GuestState->ExitReason, GuestState->GuestRip );
-    NT_ASSERT( FALSE );
+VOID VmExitUnknown(IN PGUEST_STATE GuestState) {
+  DPRINT("HyperBone: Unhandled exit reason 0x%llX, guest EIP 0x%p\n",
+         GuestState->ExitReason, GuestState->GuestRip);
+  NT_ASSERT(FALSE);
 }
 
 /// <summary>
 /// INVD handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitINVD( IN PGUEST_STATE GuestState )
-{
-    // This is the handler for the INVD instruction. Technically it may be more
-    // correct to use __invd instead of __wbinvd, but that intrinsic doesn't
-    // actually exist. Additionally, the Windows kernel (or HAL) don't contain
-    // any example of INVD actually ever being used. Finally, Hyper-V itself
-    // handles INVD by issuing WBINVD as well, so we'll just do that here too.
-    __wbinvd();
-    VmxpAdvanceEIP( GuestState );
+VOID VmExitINVD(IN PGUEST_STATE GuestState) {
+  // This is the handler for the INVD instruction. Technically it may be more
+  // correct to use __invd instead of __wbinvd, but that intrinsic doesn't
+  // actually exist. Additionally, the Windows kernel (or HAL) don't contain
+  // any example of INVD actually ever being used. Finally, Hyper-V itself
+  // handles INVD by issuing WBINVD as well, so we'll just do that here too.
+  __wbinvd();
+  VmxpAdvanceEIP(GuestState);
 }
-void CmClearBit32(ULONG* dword, ULONG bit)
-{
-    ULONG mask = 0xFFFFFFFF;
-    ULONG sub = (1 << bit);
-    mask = mask - sub;
-    *dword = *dword & mask;
+void CmClearBit32(ULONG *dword, ULONG bit) {
+  ULONG mask = 0xFFFFFFFF;
+  ULONG sub = (1 << bit);
+  mask = mask - sub;
+  *dword = *dword & mask;
 }
 /// <summary>
 /// CPUID handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitCPUID( IN PGUEST_STATE GuestState )
-{
-    CPUID cpu_info = { 0 };
-    __cpuidex( (int*)&cpu_info, (int)GuestState->GpRegs->Rax, (int)GuestState->GpRegs->Rcx );
-    if ((int)GuestState->GpRegs->Rax==0x1)
-    {
-        CmClearBit32(&cpu_info.ecx, 5);
-    }
-    GuestState->GpRegs->Rax = cpu_info.eax;
-    GuestState->GpRegs->Rbx = cpu_info.ebx;
-    GuestState->GpRegs->Rcx = cpu_info.ecx;
-    GuestState->GpRegs->Rdx = cpu_info.edx;
+VOID VmExitCPUID(IN PGUEST_STATE GuestState) {
+  CPUID cpu_info = {0};
+  __cpuidex((int *)&cpu_info, (int)GuestState->GpRegs->Rax,
+            (int)GuestState->GpRegs->Rcx);
+  if ((int)GuestState->GpRegs->Rax == 0x1) {
+    CmClearBit32(&cpu_info.ecx, 5);
+  }
+  GuestState->GpRegs->Rax = cpu_info.eax;
+  GuestState->GpRegs->Rbx = cpu_info.ebx;
+  GuestState->GpRegs->Rcx = cpu_info.ecx;
+  GuestState->GpRegs->Rdx = cpu_info.edx;
 
-    VmxpAdvanceEIP( GuestState );
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// RDTSC handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitRdtsc( IN PGUEST_STATE GuestState )
-{
-    ULARGE_INTEGER tsc = { 0 };
-    tsc.QuadPart = __rdtsc();
-    GuestState->GpRegs->Rdx = tsc.HighPart;
-    GuestState->GpRegs->Rax = tsc.LowPart;
+VOID VmExitRdtsc(IN PGUEST_STATE GuestState) {
+  ULARGE_INTEGER tsc = {0};
+  tsc.QuadPart = __rdtsc();
+  GuestState->GpRegs->Rdx = tsc.HighPart;
+  GuestState->GpRegs->Rax = tsc.LowPart;
 
-    VmxpAdvanceEIP( GuestState );
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// RDTSCP handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitRdtscp( IN PGUEST_STATE GuestState )
-{
-    unsigned int tscAux = 0;
-    ULARGE_INTEGER tsc = { 0 };
-    tsc.QuadPart = __rdtscp( &tscAux );
-    GuestState->GpRegs->Rdx = tsc.HighPart;
-    GuestState->GpRegs->Rax = tsc.LowPart;
-    GuestState->GpRegs->Rcx = tscAux;
+VOID VmExitRdtscp(IN PGUEST_STATE GuestState) {
+  unsigned int tscAux = 0;
+  ULARGE_INTEGER tsc = {0};
+  tsc.QuadPart = __rdtscp(&tscAux);
+  GuestState->GpRegs->Rdx = tsc.HighPart;
+  GuestState->GpRegs->Rax = tsc.LowPart;
+  GuestState->GpRegs->Rcx = tscAux;
 
-    VmxpAdvanceEIP( GuestState );
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// XSETBV handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitXSETBV( IN PGUEST_STATE GuestState )
-{
-    _xsetbv( (ULONG)GuestState->GpRegs->Rcx, GuestState->GpRegs->Rdx << 32 | GuestState->GpRegs->Rax );
-    VmxpAdvanceEIP( GuestState );
+VOID VmExitXSETBV(IN PGUEST_STATE GuestState) {
+  _xsetbv((ULONG)GuestState->GpRegs->Rcx,
+          GuestState->GpRegs->Rdx << 32 | GuestState->GpRegs->Rax);
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// VMX instructions (vmxon, vmread, etc.) handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitVMOP( IN PGUEST_STATE GuestState )
-{
-    // Set the CF flag, which is how VMX instructions indicate failure
-    //GuestState->GuestEFlags.Fields.CF = TRUE;
-    //__vmx_vmwrite( GUEST_RFLAGS, GuestState->GuestEFlags.All );
-    //VmxpAdvanceEIP( GuestState );
-    UNREFERENCED_PARAMETER( GuestState );
-    VmxInjectEvent( INTERRUPT_HARDWARE_EXCEPTION, VECTOR_INVALID_OPCODE_EXCEPTION, 0 );
+VOID VmExitVMOP(IN PGUEST_STATE GuestState) {
+  // Set the CF flag, which is how VMX instructions indicate failure
+  // GuestState->GuestEFlags.Fields.CF = TRUE;
+  //__vmx_vmwrite( GUEST_RFLAGS, GuestState->GuestEFlags.All );
+  // VmxpAdvanceEIP( GuestState );
+  UNREFERENCED_PARAMETER(GuestState);
+  VmxInjectEvent(INTERRUPT_HARDWARE_EXCEPTION, VECTOR_INVALID_OPCODE_EXCEPTION,
+                 0);
 }
 
 /// <summary>
 /// VMCALL handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitVmCall( IN PGUEST_STATE GuestState )
-{
-    ULONG32 HypercallNumber = (ULONG32)(GuestState->GpRegs->Rcx & 0xFFFF);
-    EPT_CTX ctx = { 0 };
+VOID VmExitVmCall(IN PGUEST_STATE GuestState) {
+  ULONG32 HypercallNumber = (ULONG32)(GuestState->GpRegs->Rcx & 0xFFFF);
+  EPT_CTX ctx = {0};
 
-    switch (HypercallNumber)
-    {
-    case HYPERCALL_UNLOAD:
-        GuestState->ExitPending = TRUE;
-        break;
+  switch (HypercallNumber) {
+  case HYPERCALL_UNLOAD:
+    GuestState->ExitPending = TRUE;
+    break;
 
-    case HYPERCALL_HOOK_LSTAR:
-        //DPRINT( "HyperBone: CPU %d: %s: HYPERCALL_HOOKLSTAR new address 0x%p\n", i, __FUNCTION__, GuestRegs->rdx );
-        GuestState->Vcpu->OriginalLSTAR = __readmsr( MSR_LSTAR );
-        __writemsr( MSR_LSTAR, GuestState->GpRegs->Rdx );
-        break;
+  case HYPERCALL_HOOK_LSTAR:
+    // DPRINT( "HyperBone: CPU %d: %s: HYPERCALL_HOOKLSTAR new address 0x%p\n",
+    // i, __FUNCTION__, GuestRegs->rdx );
+    GuestState->Vcpu->OriginalLSTAR = __readmsr(MSR_LSTAR);
+    __writemsr(MSR_LSTAR, GuestState->GpRegs->Rdx);
+    break;
 
-    case HYPERCALL_UNHOOK_LSTAR:
-        //DPRINT( "HyperBone: CPU %d: %s: HYPERCALL_UNHOOKLSTAR, original address 0x%p\n", i, __FUNCTION__, g_origLSTAR[i] );
-        __writemsr( MSR_LSTAR, GuestState->Vcpu->OriginalLSTAR );
-        GuestState->Vcpu->OriginalLSTAR = 0;
-        break;
+  case HYPERCALL_UNHOOK_LSTAR:
+    // DPRINT( "HyperBone: CPU %d: %s: HYPERCALL_UNHOOKLSTAR, original address
+    // 0x%p\n", i, __FUNCTION__, g_origLSTAR[i] );
+    __writemsr(MSR_LSTAR, GuestState->Vcpu->OriginalLSTAR);
+    GuestState->Vcpu->OriginalLSTAR = 0;
+    break;
 
-    case HYPERCALL_HOOK_PAGE:
-        EptUpdateTableRecursive(
-            &GuestState->Vcpu->EPT, GuestState->Vcpu->EPT.PML4Ptr, 
-            EPT_TOP_LEVEL, GuestState->GpRegs->Rdx, EPT_ACCESS_EXEC,
-            GuestState->GpRegs->R8, 1 
-            );
-        __invept( INV_ALL_CONTEXTS, &ctx );
-        break;
+  case HYPERCALL_HOOK_PAGE:
+    EptUpdateTableRecursive(
+        &GuestState->Vcpu->EPT, GuestState->Vcpu->EPT.PML4Ptr, EPT_TOP_LEVEL,
+        GuestState->GpRegs->Rdx, EPT_ACCESS_EXEC, GuestState->GpRegs->R8, 1);
+    __invept(INV_ALL_CONTEXTS, &ctx);
+    break;
 
-    case HYPERCALL_UNHOOK_PAGE:
-        EptUpdateTableRecursive(
-            &GuestState->Vcpu->EPT, GuestState->Vcpu->EPT.PML4Ptr, 
-            EPT_TOP_LEVEL, GuestState->GpRegs->Rdx, EPT_ACCESS_ALL, 
-            GuestState->GpRegs->Rdx, 1 
-            );
-        __invept( INV_ALL_CONTEXTS, &ctx );
-        break;
+  case HYPERCALL_UNHOOK_PAGE:
+    EptUpdateTableRecursive(
+        &GuestState->Vcpu->EPT, GuestState->Vcpu->EPT.PML4Ptr, EPT_TOP_LEVEL,
+        GuestState->GpRegs->Rdx, EPT_ACCESS_ALL, GuestState->GpRegs->Rdx, 1);
+    __invept(INV_ALL_CONTEXTS, &ctx);
+    break;
 
-    default:
-        DPRINT( "HyperBone: CPU %d: %s: Unsupported hypercall 0x%04X\n", CPU_IDX, __FUNCTION__, HypercallNumber );
-        break;
-    }
+  default:
+    DPRINT("HyperBone: CPU %d: %s: Unsupported hypercall 0x%04X\n", CPU_IDX,
+           __FUNCTION__, HypercallNumber);
+    break;
+  }
 
-    VmxpAdvanceEIP( GuestState );
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// CRx mov from/to
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitCR( IN PGUEST_STATE GuestState )
-{
-    PMOV_CR_QUALIFICATION data = (PMOV_CR_QUALIFICATION)&GuestState->ExitQualification;
-    PULONG64 regPtr = (PULONG64)&GuestState->GpRegs->Rax + data->Fields.Register;
-    VPID_CTX ctx = { 0 };
+VOID VmExitCR(IN PGUEST_STATE GuestState) {
+  PMOV_CR_QUALIFICATION data =
+      (PMOV_CR_QUALIFICATION)&GuestState->ExitQualification;
+  PULONG64 regPtr = (PULONG64)&GuestState->GpRegs->Rax + data->Fields.Register;
+  VPID_CTX ctx = {0};
 
-    switch (data->Fields.AccessType)
-    {
-    case TYPE_MOV_TO_CR:
-    {
-        switch (data->Fields.ControlRegister)
-        {
-        case 0:
-            __vmx_vmwrite( GUEST_CR0, *regPtr );
-            __vmx_vmwrite( CR0_READ_SHADOW, *regPtr );
-            break;
-        case 3:
-            __vmx_vmwrite( GUEST_CR3, *regPtr );
-            if (g_Data->Features.VPID)
-                __invvpid( INV_ALL_CONTEXTS, &ctx );
-        //  DbgPrint("ProcessNaem:%s   ProcessCr3:%p  LoadCr3:%p", PsGetProcessImageFileName(PsGetCurrentProcess()), *(ULONG64*)((ULONG64)PsGetCurrentProcess() + 0x028), *regPtr);
-            break;
-        case 4:
-            __vmx_vmwrite( GUEST_CR4, *regPtr );
-            __vmx_vmwrite( CR4_READ_SHADOW, *regPtr );
-            break;
-        default:
-            DPRINT( "HyperBone: CPU %d: %s: Unsupported register %d\n", CPU_IDX, __FUNCTION__, data->Fields.ControlRegister );
-            ASSERT( FALSE );
-            break;
-        }
-    }
-    break;
-
-    case TYPE_MOV_FROM_CR:
-    {
-        switch (data->Fields.ControlRegister)
-        {
-        case 0:
-            __vmx_vmread( GUEST_CR0, regPtr );
-            break;
-        case 3:
-            __vmx_vmread( GUEST_CR3, regPtr );
-            break;
-        case 4:
-            __vmx_vmread( GUEST_CR4, regPtr );
-            break;
-        default:
-            DPRINT( "HyperBone: CPU %d: %s: Unsupported register %d\n", CPU_IDX, __FUNCTION__, data->Fields.ControlRegister );
-            ASSERT( FALSE );
-            break;
-        }
-    }
-    break;
-
+  switch (data->Fields.AccessType) {
+  case TYPE_MOV_TO_CR: {
+    switch (data->Fields.ControlRegister) {
+    case 0:
+      __vmx_vmwrite(GUEST_CR0, *regPtr);
+      __vmx_vmwrite(CR0_READ_SHADOW, *regPtr);
+      break;
+    case 3:
+      __vmx_vmwrite(GUEST_CR3, *regPtr);
+      if (g_Data->Features.VPID)
+        __invvpid(INV_ALL_CONTEXTS, &ctx);
+      //  DbgPrint("ProcessNaem:%s   ProcessCr3:%p  LoadCr3:%p",
+      //  PsGetProcessImageFileName(PsGetCurrentProcess()),
+      //  *(ULONG64*)((ULONG64)PsGetCurrentProcess() + 0x028), *regPtr);
+      break;
+    case 4:
+      __vmx_vmwrite(GUEST_CR4, *regPtr);
+      __vmx_vmwrite(CR4_READ_SHADOW, *regPtr);
+      break;
     default:
-        DPRINT( "HyperBone: CPU %d: %s: Unsupported operation %d\n", CPU_IDX, __FUNCTION__, data->Fields.AccessType );
-        ASSERT( FALSE );
-        break;
+      DPRINT("HyperBone: CPU %d: %s: Unsupported register %d\n", CPU_IDX,
+             __FUNCTION__, data->Fields.ControlRegister);
+      ASSERT(FALSE);
+      break;
     }
+  } break;
 
-    VmxpAdvanceEIP( GuestState );
+  case TYPE_MOV_FROM_CR: {
+    switch (data->Fields.ControlRegister) {
+    case 0:
+      __vmx_vmread(GUEST_CR0, regPtr);
+      break;
+    case 3:
+      __vmx_vmread(GUEST_CR3, regPtr);
+      break;
+    case 4:
+      __vmx_vmread(GUEST_CR4, regPtr);
+      break;
+    default:
+      DPRINT("HyperBone: CPU %d: %s: Unsupported register %d\n", CPU_IDX,
+             __FUNCTION__, data->Fields.ControlRegister);
+      ASSERT(FALSE);
+      break;
+    }
+  } break;
+
+  default:
+    DPRINT("HyperBone: CPU %d: %s: Unsupported operation %d\n", CPU_IDX,
+           __FUNCTION__, data->Fields.AccessType);
+    ASSERT(FALSE);
+    break;
+  }
+
+  VmxpAdvanceEIP(GuestState);
 }
-
 
 /// <summary>
 /// RDMSR handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitMSRRead( IN PGUEST_STATE GuestState )
-{
-    LARGE_INTEGER MsrValue = { 0 };
-    ULONG32 ecx = (ULONG32)GuestState->GpRegs->Rcx;
+VOID VmExitMSRRead(IN PGUEST_STATE GuestState) {
+  LARGE_INTEGER MsrValue = {0};
+  ULONG32 ecx = (ULONG32)GuestState->GpRegs->Rcx;
 
-    switch (ecx)
-    {
-    case MSR_LSTAR:
-        MsrValue.QuadPart = GuestState->Vcpu->OriginalLSTAR != 0 ? GuestState->Vcpu->OriginalLSTAR : __readmsr( MSR_LSTAR );
-        //DPRINT( "HyperBone: CPU %d: %s: rdmsr MSR_LSTAR, value 0x%p\n", CPU_IDX, __FUNCTION__, MsrValue.QuadPart );
-        break;
-    case MSR_GS_BASE:
-        MsrValue.QuadPart = VmcsRead( GUEST_GS_BASE );
-        break;
-    case MSR_FS_BASE:
-        MsrValue.QuadPart = VmcsRead( GUEST_FS_BASE );
-        break;
-    case MSR_IA32_DEBUGCTL:
-        MsrValue.QuadPart = VmcsRead( GUEST_IA32_DEBUGCTL );
-        break;
+  switch (ecx) {
+  case MSR_LSTAR:
+    MsrValue.QuadPart = GuestState->Vcpu->OriginalLSTAR != 0
+                            ? GuestState->Vcpu->OriginalLSTAR
+                            : __readmsr(MSR_LSTAR);
+    // DPRINT( "HyperBone: CPU %d: %s: rdmsr MSR_LSTAR, value 0x%p\n", CPU_IDX,
+    // __FUNCTION__, MsrValue.QuadPart );
+    break;
+  case MSR_GS_BASE:
+    MsrValue.QuadPart = VmcsRead(GUEST_GS_BASE);
+    break;
+  case MSR_FS_BASE:
+    MsrValue.QuadPart = VmcsRead(GUEST_FS_BASE);
+    break;
+  case MSR_IA32_DEBUGCTL:
+    MsrValue.QuadPart = VmcsRead(GUEST_IA32_DEBUGCTL);
+    break;
 
-        // Report VMX as locked
-    case MSR_IA32_FEATURE_CONTROL:
-        MsrValue.QuadPart = __readmsr( ecx );
-        PIA32_FEATURE_CONTROL_MSR pMSR = (PIA32_FEATURE_CONTROL_MSR)&MsrValue.QuadPart;
-        pMSR->Fields.EnableVmxon = FALSE;
-        pMSR->Fields.Lock = TRUE;
-        break;
+    // Report VMX as locked
+  case MSR_IA32_FEATURE_CONTROL:
+    MsrValue.QuadPart = __readmsr(ecx);
+    PIA32_FEATURE_CONTROL_MSR pMSR =
+        (PIA32_FEATURE_CONTROL_MSR)&MsrValue.QuadPart;
+    pMSR->Fields.EnableVmxon = FALSE;
+    pMSR->Fields.Lock = TRUE;
+    break;
 
-        // Virtualize VMX register access
-    case MSR_IA32_VMX_BASIC:
-    case MSR_IA32_VMX_PINBASED_CTLS:
-    case MSR_IA32_VMX_PROCBASED_CTLS:
-    case MSR_IA32_VMX_EXIT_CTLS:
-    case MSR_IA32_VMX_ENTRY_CTLS:
-    case MSR_IA32_VMX_MISC:
-    case MSR_IA32_VMX_CR0_FIXED0:
-    case MSR_IA32_VMX_CR0_FIXED1:
-    case MSR_IA32_VMX_CR4_FIXED0:
-    case MSR_IA32_VMX_CR4_FIXED1:
-    case MSR_IA32_VMX_VMCS_ENUM:
-    case MSR_IA32_VMX_PROCBASED_CTLS2:
-    case MSR_IA32_VMX_EPT_VPID_CAP:
-    case MSR_IA32_VMX_TRUE_PINBASED_CTLS:
-    case MSR_IA32_VMX_TRUE_PROCBASED_CTLS:
-    case MSR_IA32_VMX_TRUE_EXIT_CTLS:
-    case MSR_IA32_VMX_TRUE_ENTRY_CTLS:
-    case MSR_IA32_VMX_VMFUNC:
-        MsrValue.QuadPart = GuestState->Vcpu->MsrData[VMX_MSR( ecx )].QuadPart;
-        break;
+    // Virtualize VMX register access
+  case MSR_IA32_VMX_BASIC:
+  case MSR_IA32_VMX_PINBASED_CTLS:
+  case MSR_IA32_VMX_PROCBASED_CTLS:
+  case MSR_IA32_VMX_EXIT_CTLS:
+  case MSR_IA32_VMX_ENTRY_CTLS:
+  case MSR_IA32_VMX_MISC:
+  case MSR_IA32_VMX_CR0_FIXED0:
+  case MSR_IA32_VMX_CR0_FIXED1:
+  case MSR_IA32_VMX_CR4_FIXED0:
+  case MSR_IA32_VMX_CR4_FIXED1:
+  case MSR_IA32_VMX_VMCS_ENUM:
+  case MSR_IA32_VMX_PROCBASED_CTLS2:
+  case MSR_IA32_VMX_EPT_VPID_CAP:
+  case MSR_IA32_VMX_TRUE_PINBASED_CTLS:
+  case MSR_IA32_VMX_TRUE_PROCBASED_CTLS:
+  case MSR_IA32_VMX_TRUE_EXIT_CTLS:
+  case MSR_IA32_VMX_TRUE_ENTRY_CTLS:
+  case MSR_IA32_VMX_VMFUNC:
+    MsrValue.QuadPart = GuestState->Vcpu->MsrData[VMX_MSR(ecx)].QuadPart;
+    break;
 
-    default:
-        MsrValue.QuadPart = __readmsr( ecx );
-    }
+  default:
+    MsrValue.QuadPart = __readmsr(ecx);
+  }
 
-    GuestState->GpRegs->Rax = MsrValue.LowPart;
-    GuestState->GpRegs->Rdx = MsrValue.HighPart;
+  GuestState->GpRegs->Rax = MsrValue.LowPart;
+  GuestState->GpRegs->Rdx = MsrValue.HighPart;
 
-    VmxpAdvanceEIP( GuestState );
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// WRMSR handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitMSRWrite( IN PGUEST_STATE GuestState )
-{
-    LARGE_INTEGER MsrValue = { 0 };
-    ULONG32 ecx = (ULONG32)GuestState->GpRegs->Rcx;
+VOID VmExitMSRWrite(IN PGUEST_STATE GuestState) {
+  LARGE_INTEGER MsrValue = {0};
+  ULONG32 ecx = (ULONG32)GuestState->GpRegs->Rcx;
 
-    MsrValue.LowPart = (ULONG32)GuestState->GpRegs->Rax;
-    MsrValue.HighPart = (ULONG32)GuestState->GpRegs->Rdx;
+  MsrValue.LowPart = (ULONG32)GuestState->GpRegs->Rax;
+  MsrValue.HighPart = (ULONG32)GuestState->GpRegs->Rdx;
 
-    switch (ecx)
-    {
-    case MSR_LSTAR:
-        //DPRINT( "HyperBone: CPU %d: %s: wrmsr MSR_LSTAR, new value 0x%p\n", CPU_IDX, __FUNCTION__, MsrValue.QuadPart );
-        // Ignore write if hooked
-        /*if(GuestState->Vcpu->OriginalLSTAR == 0)
-            __writemsr( MSR_LSTAR, MsrValue.QuadPart );*/
-        //DbgPrint("拦截到写入msr操作@！");
-        break;
-    case MSR_GS_BASE:
-        __vmx_vmwrite( GUEST_GS_BASE, MsrValue.QuadPart );
-        break;
-    case MSR_FS_BASE:
-        __vmx_vmwrite( GUEST_FS_BASE, MsrValue.QuadPart );
-        break;
-    case MSR_IA32_DEBUGCTL:
-        __vmx_vmwrite( GUEST_IA32_DEBUGCTL, MsrValue.QuadPart );
-        __writemsr( MSR_IA32_DEBUGCTL, MsrValue.QuadPart );
-        break;
+  switch (ecx) {
+  case MSR_LSTAR:
+    // DPRINT( "HyperBone: CPU %d: %s: wrmsr MSR_LSTAR, new value 0x%p\n",
+    // CPU_IDX, __FUNCTION__, MsrValue.QuadPart );
+    // Ignore write if hooked
+    /*if(GuestState->Vcpu->OriginalLSTAR == 0)
+        __writemsr( MSR_LSTAR, MsrValue.QuadPart );*/
+    // DbgPrint("拦截到写入msr操作@！");
+    break;
+  case MSR_GS_BASE:
+    __vmx_vmwrite(GUEST_GS_BASE, MsrValue.QuadPart);
+    break;
+  case MSR_FS_BASE:
+    __vmx_vmwrite(GUEST_FS_BASE, MsrValue.QuadPart);
+    break;
+  case MSR_IA32_DEBUGCTL:
+    __vmx_vmwrite(GUEST_IA32_DEBUGCTL, MsrValue.QuadPart);
+    __writemsr(MSR_IA32_DEBUGCTL, MsrValue.QuadPart);
+    break;
 
-        // Virtualize VMX register access
-    case MSR_IA32_VMX_BASIC:
-    case MSR_IA32_VMX_PINBASED_CTLS:
-    case MSR_IA32_VMX_PROCBASED_CTLS:
-    case MSR_IA32_VMX_EXIT_CTLS:
-    case MSR_IA32_VMX_ENTRY_CTLS:
-    case MSR_IA32_VMX_MISC:
-    case MSR_IA32_VMX_CR0_FIXED0:
-    case MSR_IA32_VMX_CR0_FIXED1:
-    case MSR_IA32_VMX_CR4_FIXED0:
-    case MSR_IA32_VMX_CR4_FIXED1:
-    case MSR_IA32_VMX_VMCS_ENUM:
-    case MSR_IA32_VMX_PROCBASED_CTLS2:
-    case MSR_IA32_VMX_EPT_VPID_CAP:
-    case MSR_IA32_VMX_TRUE_PINBASED_CTLS:
-    case MSR_IA32_VMX_TRUE_PROCBASED_CTLS:
-    case MSR_IA32_VMX_TRUE_EXIT_CTLS:
-    case MSR_IA32_VMX_TRUE_ENTRY_CTLS:
-    case MSR_IA32_VMX_VMFUNC:
-        break;
+    // Virtualize VMX register access
+  case MSR_IA32_VMX_BASIC:
+  case MSR_IA32_VMX_PINBASED_CTLS:
+  case MSR_IA32_VMX_PROCBASED_CTLS:
+  case MSR_IA32_VMX_EXIT_CTLS:
+  case MSR_IA32_VMX_ENTRY_CTLS:
+  case MSR_IA32_VMX_MISC:
+  case MSR_IA32_VMX_CR0_FIXED0:
+  case MSR_IA32_VMX_CR0_FIXED1:
+  case MSR_IA32_VMX_CR4_FIXED0:
+  case MSR_IA32_VMX_CR4_FIXED1:
+  case MSR_IA32_VMX_VMCS_ENUM:
+  case MSR_IA32_VMX_PROCBASED_CTLS2:
+  case MSR_IA32_VMX_EPT_VPID_CAP:
+  case MSR_IA32_VMX_TRUE_PINBASED_CTLS:
+  case MSR_IA32_VMX_TRUE_PROCBASED_CTLS:
+  case MSR_IA32_VMX_TRUE_EXIT_CTLS:
+  case MSR_IA32_VMX_TRUE_ENTRY_CTLS:
+  case MSR_IA32_VMX_VMFUNC:
+    break;
 
-    default:
-        __writemsr( ecx, MsrValue.QuadPart );
-    }
+  default:
+    __writemsr(ecx, MsrValue.QuadPart);
+  }
 
-    VmxpAdvanceEIP( GuestState );
+  VmxpAdvanceEIP(GuestState);
 }
 
 /// <summary>
 /// Handle exceptions and interrupts
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitEvent( IN PGUEST_STATE GuestState )
-{
-    INTERRUPT_INFO_FIELD Event = { 0 };
-    ULONG64 ErrorCode = 0;
-    ULONG InstructionLength = (ULONG)VmcsRead( VM_EXIT_INSTRUCTION_LEN );
+VOID VmExitEvent(IN PGUEST_STATE GuestState) {
+  INTERRUPT_INFO_FIELD Event = {0};
+  ULONG64 ErrorCode = 0;
+  ULONG InstructionLength = (ULONG)VmcsRead(VM_EXIT_INSTRUCTION_LEN);
 
-    Event.All = (ULONG32)VmcsRead( VM_EXIT_INTR_INFO );
-    ErrorCode = VmcsRead( VM_EXIT_INTR_ERROR_CODE );
-    if (Event.Fields.ErrorCodeValid)
-        __vmx_vmwrite( VM_ENTRY_EXCEPTION_ERROR_CODE, ErrorCode );
+  Event.All = (ULONG32)VmcsRead(VM_EXIT_INTR_INFO);
+  ErrorCode = VmcsRead(VM_EXIT_INTR_ERROR_CODE);
+  if (Event.Fields.ErrorCodeValid)
+    __vmx_vmwrite(VM_ENTRY_EXCEPTION_ERROR_CODE, ErrorCode);
 
-    switch (Event.Fields.Type)
-    {
-    case INTERRUPT_NMI:
-        DPRINT( "HyperBone: CPU %d: %s: HandleNmi()\n", CPU_IDX, __FUNCTION__ );
-        VmxInjectEvent( INTERRUPT_NMI, VECTOR_NMI_INTERRUPT, 0 );
-        ASSERT( FALSE );
-        break;
+  switch (Event.Fields.Type) {
+  case INTERRUPT_NMI:
+    DPRINT("HyperBone: CPU %d: %s: HandleNmi()\n", CPU_IDX, __FUNCTION__);
+    VmxInjectEvent(INTERRUPT_NMI, VECTOR_NMI_INTERRUPT, 0);
+    ASSERT(FALSE);
+    break;
 
-    case INTERRUPT_HARDWARE_EXCEPTION:
-        DPRINT( "HyperBone: CPU %d: %s: Hardware Exception (vector = 0x%x)\n", CPU_IDX, __FUNCTION__, Event.Fields.Vector );
-        VmxInjectEvent( Event.Fields.Type, Event.Fields.Vector, InstructionLength );
-        break;
+  case INTERRUPT_HARDWARE_EXCEPTION:
+    DPRINT("HyperBone: CPU %d: %s: Hardware Exception (vector = 0x%x)\n",
+           CPU_IDX, __FUNCTION__, Event.Fields.Vector);
+    VmxInjectEvent(Event.Fields.Type, Event.Fields.Vector, InstructionLength);
+    break;
 
-    case INTERRUPT_SOFTWARE_EXCEPTION:
-        switch (Event.Fields.Vector)
-        {
-        case VECTOR_BREAKPOINT_EXCEPTION:
-            DPRINT( "HyperBone: CPU %d: %s: int3 EIP = 0x%p\n", CPU_IDX, __FUNCTION__, GuestState->GuestRip );
-            VmxInjectEvent( INTERRUPT_SOFTWARE_EXCEPTION, VECTOR_BREAKPOINT_EXCEPTION, InstructionLength );
-            break;
-
-        default:
-            DPRINT( "HyperBone: CPU %d: %s: Software Exception (vector = 0x%X)\n", CPU_IDX, __FUNCTION__, Event.Fields.Vector );
-            VmxInjectEvent( Event.Fields.Type, Event.Fields.Vector, InstructionLength );
-            break;
-        }
-        break;
+  case INTERRUPT_SOFTWARE_EXCEPTION:
+    switch (Event.Fields.Vector) {
+    case VECTOR_BREAKPOINT_EXCEPTION:
+      DPRINT("HyperBone: CPU %d: %s: int3 EIP = 0x%p\n", CPU_IDX, __FUNCTION__,
+             GuestState->GuestRip);
+      VmxInjectEvent(INTERRUPT_SOFTWARE_EXCEPTION, VECTOR_BREAKPOINT_EXCEPTION,
+                     InstructionLength);
+      break;
 
     default:
-        DPRINT( "HyperBone: CPU %d: %s: Unhandled event type %d\n", CPU_IDX, __FUNCTION__, Event.Fields.Type );
-        VmxInjectEvent( Event.Fields.Type, Event.Fields.Vector, InstructionLength );
-        break;
+      DPRINT("HyperBone: CPU %d: %s: Software Exception (vector = 0x%X)\n",
+             CPU_IDX, __FUNCTION__, Event.Fields.Vector);
+      VmxInjectEvent(Event.Fields.Type, Event.Fields.Vector, InstructionLength);
+      break;
     }
+    break;
+
+  default:
+    DPRINT("HyperBone: CPU %d: %s: Unhandled event type %d\n", CPU_IDX,
+           __FUNCTION__, Event.Fields.Type);
+    VmxInjectEvent(Event.Fields.Type, Event.Fields.Vector, InstructionLength);
+    break;
+  }
 }
 
 /// <summary>
 /// Handle MTF exiting
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitMTF( IN PGUEST_STATE GuestState )
-{
-    //DPRINT( "HyperBone: CPU %d: %s: MTF exit, EIP 0x%p\n", CPU_IDX, __FUNCTION__, GuestState->GuestRip );
-    if (GuestState->Vcpu->HookDispatch.pEntry != NULL)
-    {
-        PVCPU Vcpu = GuestState->Vcpu;
-        PEPT_DATA pEPT = &Vcpu->EPT;
-        PR3EPT_HOOK_2 pHook = Vcpu->HookDispatch.pEntry;
+VOID VmExitMTF(IN PGUEST_STATE GuestState) {
+  // DPRINT( "HyperBone: CPU %d: %s: MTF exit, EIP 0x%p\n", CPU_IDX,
+  // __FUNCTION__, GuestState->GuestRip );
+  if (GuestState->Vcpu->HookDispatch.pEntry != NULL) {
+    PVCPU Vcpu = GuestState->Vcpu;
+    PEPT_DATA pEPT = &Vcpu->EPT;
+    PR3EPT_HOOK_2 pHook = Vcpu->HookDispatch.pEntry;
 
-        // REP-prefixed instructions
-        if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
-            return;
-        //DbgPrint("MTF hp R3\n");
-        // Update EPT PTE access
-        EptUpdateTableRecursive(
-            pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL, 
-            pHook->Data_PAGE_PFN, 
-            EPT_ACCESS_EXEC, 
-            pHook->Code_PAGE_PFN, 1 
-            );
+    // REP-prefixed instructions
+    if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
+      return;
+    // DbgPrint("MTF hp R3\n");
+    // Update EPT PTE access
+    EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL,
+                            pHook->Data_PAGE_PFN, EPT_ACCESS_EXEC,
+                            pHook->Code_PAGE_PFN, 1);
 
-        // Rely on page cache if split method is used
-        /*EPT_CTX ctx = { 0 };
-        __invept( INV_ALL_CONTEXTS, &ctx );*/
+    // Rely on page cache if split method is used
+    /*EPT_CTX ctx = { 0 };
+    __invept( INV_ALL_CONTEXTS, &ctx );*/
 
-        Vcpu->HookDispatch.pEntry = NULL;
-        Vcpu->HookDispatch.Rip = 0;
-        ToggleMTF( FALSE );
-    }
-    else if (GuestState->Vcpu->HookDispatch.krPentry != NULL)
-    {
-        PVCPU Vcpu = GuestState->Vcpu;
-        PEPT_DATA pEPT = &Vcpu->EPT;
-        PPAGE_HOOK_ENTRY pHook = Vcpu->HookDispatch.krPentry;
+    Vcpu->HookDispatch.pEntry = NULL;
+    Vcpu->HookDispatch.Rip = 0;
+    ToggleMTF(FALSE);
+  } else if (GuestState->Vcpu->HookDispatch.krPentry != NULL) {
+    PVCPU Vcpu = GuestState->Vcpu;
+    PEPT_DATA pEPT = &Vcpu->EPT;
+    PPAGE_HOOK_ENTRY pHook = Vcpu->HookDispatch.krPentry;
 
-        // REP-prefixed instructions
-        if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
-            return;
-        //DbgPrint("MTF hp  R0\n");
-        // Update EPT PTE access
-        EptUpdateTableRecursive(
-            pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL,
-            pHook->DataPagePFN,
-            EPT_ACCESS_EXEC,
-            pHook->CodePagePFN, 1
-            );
+    // REP-prefixed instructions
+    if (Vcpu->HookDispatch.Rip == GuestState->GuestRip)
+      return;
+    // DbgPrint("MTF hp  R0\n");
+    // Update EPT PTE access
+    EptUpdateTableRecursive(pEPT, pEPT->PML4Ptr, EPT_TOP_LEVEL,
+                            pHook->DataPagePFN, EPT_ACCESS_EXEC,
+                            pHook->CodePagePFN, 1);
 
-        // Rely on page cache if split method is used
-        /*EPT_CTX ctx = { 0 };
-        __invept( INV_ALL_CONTEXTS, &ctx );*/
+    // Rely on page cache if split method is used
+    /*EPT_CTX ctx = { 0 };
+    __invept( INV_ALL_CONTEXTS, &ctx );*/
 
-        Vcpu->HookDispatch.krPentry = NULL;
-        Vcpu->HookDispatch.Rip = 0;
-        ToggleMTF(FALSE);
-    }
-    
+    Vcpu->HookDispatch.krPentry = NULL;
+    Vcpu->HookDispatch.Rip = 0;
+    ToggleMTF(FALSE);
+  }
 }
 
 /// <summary>
 /// VMLAUNCH failed
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitStartFailed( IN PGUEST_STATE GuestState )
-{
-    DPRINT(
-        "HyperBone: CPU %d: %s: Failed to enter VM, reason %d, code %d\n",
-        CPU_IDX, __FUNCTION__, 
-        GuestState->ExitReason, GuestState->ExitQualification 
-        );
+VOID VmExitStartFailed(IN PGUEST_STATE GuestState) {
+  DPRINT("HyperBone: CPU %d: %s: Failed to enter VM, reason %d, code %d\n",
+         CPU_IDX, __FUNCTION__, GuestState->ExitReason,
+         GuestState->ExitQualification);
 
-    KeBugCheckEx( HYPERVISOR_ERROR, BUG_CHECK_INVALID_VM, GuestState->ExitReason, GuestState->ExitQualification, 0 );
+  KeBugCheckEx(HYPERVISOR_ERROR, BUG_CHECK_INVALID_VM, GuestState->ExitReason,
+               GuestState->ExitQualification, 0);
 }
 
 /// <summary>
 /// Triple fault handler
 /// </summary>
 /// <param name="GuestState">Guest VM state</param>
-VOID VmExitTripleFault( IN PGUEST_STATE GuestState )
-{
-    DPRINT(
-        "HyperBone: CPU %d: %s: Triple fault at IP 0x%p, stack 0x%p, linear 0x%p, physical 0x%p\n",
-        CPU_IDX, __FUNCTION__, 
-        GuestState->GuestRip, GuestState->GuestRsp, GuestState->LinearAddress, GuestState->PhysicalAddress.QuadPart
-        );
+VOID VmExitTripleFault(IN PGUEST_STATE GuestState) {
+  DPRINT("HyperBone: CPU %d: %s: Triple fault at IP 0x%p, stack 0x%p, linear "
+         "0x%p, physical 0x%p\n",
+         CPU_IDX, __FUNCTION__, GuestState->GuestRip, GuestState->GuestRsp,
+         GuestState->LinearAddress, GuestState->PhysicalAddress.QuadPart);
 
-    KeBugCheckEx( HYPERVISOR_ERROR, BUG_CHECK_TRIPLE_FAULT, GuestState->GuestRip, GuestState->GuestRsp, GuestState->LinearAddress );
+  KeBugCheckEx(HYPERVISOR_ERROR, BUG_CHECK_TRIPLE_FAULT, GuestState->GuestRip,
+               GuestState->GuestRsp, GuestState->LinearAddress);
 }
-

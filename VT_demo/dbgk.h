@@ -17,7 +17,8 @@ typedef enum _DBGKM_APINUMBER
 typedef struct _DEBUG_OBJECT_KILL_PROCESS_ON_EXIT_INFORMATION
 {
     ULONG KillProcessOnExit;
-} DEBUG_OBJECT_KILL_PROCESS_ON_EXIT_INFORMATION, *PDEBUG_OBJECT_KILL_PROCESS_ON_EXIT_INFORMATION;
+} DEBUG_OBJECT_KILL_PROCESS_ON_EXIT_INFORMATION,
+*PDEBUG_OBJECT_KILL_PROCESS_ON_EXIT_INFORMATION;
 
 typedef struct _DEBUG_OBJECT
 {
@@ -168,8 +169,8 @@ typedef enum _LPC_TYPE
 #define DEBUG_OBJECT_WAIT_STATE_CHANGE      0x0001
 #define DEBUG_OBJECT_ADD_REMOVE_PROCESS     0x0002
 #define DEBUG_OBJECT_SET_INFORMATION        0x0004
-#define DEBUG_OBJECT_ALL_ACCESS             (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x0F)
-GENERIC_MAPPING DbgkDebugObjectMapping =
+#define DEBUG_OBJECT_ALL_ACCESS             (STANDARD_RIGHTS_REQUIRED |
+SYNCHRONIZE | 0x0F) GENERIC_MAPPING DbgkDebugObjectMapping =
 {
     STANDARD_RIGHTS_READ | DEBUG_OBJECT_WAIT_STATE_CHANGE,
     STANDARD_RIGHTS_WRITE | DEBUG_OBJECT_ADD_REMOVE_PROCESS,
@@ -229,17 +230,20 @@ typedef enum _PORT_INFORMATION_CLASS
 #define LPC_PVOID PVOID
 #define LPC_HANDLE HANDLE
 #endif
-#define DEBUG_OBJECT_DELETE_PENDING         (0x1) // Debug object is delete pending.
-#define DEBUG_OBJECT_KILL_ON_CLOSE          (0x2) // Kill all debugged processes on close
+#define DEBUG_OBJECT_DELETE_PENDING         (0x1) // Debug object is delete
+pending. #define DEBUG_OBJECT_KILL_ON_CLOSE          (0x2) // Kill all debugged
+processes on close
 
 #define DEBUG_KILL_ON_CLOSE                 (0x01)
 
-#define DEBUG_EVENT_READ                    (0x01)  // Event had been seen by win32 app
-#define DEBUG_EVENT_NOWAIT                  (0x02)  // No waiter one this. Just free the pool
-#define DEBUG_EVENT_INACTIVE                (0x04)  // The message is in inactive. It may be activated or deleted later
-#define DEBUG_EVENT_RELEASE                 (0x08)  // Release rundown protection on this thread
-#define DEBUG_EVENT_PROTECT_FAILED          (0x10)  // Rundown protection failed to be acquired on this thread
-#define DEBUG_EVENT_SUSPEND                 (0x20)  // Resume thread on continue
+#define DEBUG_EVENT_READ                    (0x01)  // Event had been seen by
+win32 app #define DEBUG_EVENT_NOWAIT                  (0x02)  // No waiter one
+this. Just free the pool #define DEBUG_EVENT_INACTIVE                (0x04)  //
+The message is in inactive. It may be activated or deleted later #define
+DEBUG_EVENT_RELEASE                 (0x08)  // Release rundown protection on
+this thread #define DEBUG_EVENT_PROTECT_FAILED          (0x10)  // Rundown
+protection failed to be acquired on this thread #define DEBUG_EVENT_SUSPEND
+(0x20)  // Resume thread on continue
 
 //
 // Define debug object access types. No security is present on this object.
@@ -248,7 +252,8 @@ typedef enum _PORT_INFORMATION_CLASS
 #define DEBUG_PROCESS_ASSIGN    (0x0002)
 #define DEBUG_SET_INFORMATION   (0x0004)
 #define DEBUG_QUERY_INFORMATION (0x0008)
-#define DEBUG_ALL_ACCESS     (STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|DEBUG_READ_EVENT|DEBUG_PROCESS_ASSIGN|\
+#define DEBUG_ALL_ACCESS
+(STANDARD_RIGHTS_REQUIRED|SYNCHRONIZE|DEBUG_READ_EVENT|DEBUG_PROCESS_ASSIGN|\
     DEBUG_SET_INFORMATION|DEBUG_QUERY_INFORMATION)
 
 //一些内核其他定义声明
@@ -291,38 +296,48 @@ typedef enum _PORT_INFORMATION_CLASS
 //
 #define PS_CROSS_THREAD_FLAGS_SKIP_TERMINATION_MSG 0x00000100UL
 
-#define IS_SYSTEM_THREAD(Thread)  (((Thread)->CrossThreadFlags&PS_CROSS_THREAD_FLAGS_SYSTEM) != 0)
+#define IS_SYSTEM_THREAD(Thread)
+(((Thread)->CrossThreadFlags&PS_CROSS_THREAD_FLAGS_SYSTEM) != 0)
 
 
-#define PS_PROCESS_FLAGS_CREATE_REPORTED        0x00000001UL // Create process debug call has occurred
-#define PS_PROCESS_FLAGS_NO_DEBUG_INHERIT       0x00000002UL // Don't inherit debug port
-#define PS_PROCESS_FLAGS_PROCESS_EXITING        0x00000004UL // PspExitProcess entered
-#define PS_PROCESS_FLAGS_PROCESS_DELETE         0x00000008UL // Delete process has been issued
-#define PS_PROCESS_FLAGS_WOW64_SPLIT_PAGES      0x00000010UL // Wow64 split pages
-#define PS_PROCESS_FLAGS_VM_DELETED             0x00000020UL // VM is deleted
-#define PS_PROCESS_FLAGS_OUTSWAP_ENABLED        0x00000040UL // Outswap enabled
-#define PS_PROCESS_FLAGS_OUTSWAPPED             0x00000080UL // Outswapped
-#define PS_PROCESS_FLAGS_FORK_FAILED            0x00000100UL // Fork status
-#define PS_PROCESS_FLAGS_WOW64_4GB_VA_SPACE     0x00000200UL // Wow64 process with 4gb virtual address space
-#define PS_PROCESS_FLAGS_ADDRESS_SPACE1         0x00000400UL // Addr space state1
-#define PS_PROCESS_FLAGS_ADDRESS_SPACE2         0x00000800UL // Addr space state2
-#define PS_PROCESS_FLAGS_SET_TIMER_RESOLUTION   0x00001000UL // SetTimerResolution has been called
-#define PS_PROCESS_FLAGS_BREAK_ON_TERMINATION   0x00002000UL // Break on process termination
-#define PS_PROCESS_FLAGS_CREATING_SESSION       0x00004000UL // Process is creating a session
-#define PS_PROCESS_FLAGS_USING_WRITE_WATCH      0x00008000UL // Process is using the write watch APIs
-#define PS_PROCESS_FLAGS_IN_SESSION             0x00010000UL // Process is in a session
-#define PS_PROCESS_FLAGS_OVERRIDE_ADDRESS_SPACE 0x00020000UL // Process must use native address space (Win64 only)
-#define PS_PROCESS_FLAGS_HAS_ADDRESS_SPACE      0x00040000UL // This process has an address space
-#define PS_PROCESS_FLAGS_LAUNCH_PREFETCHED      0x00080000UL // Process launch was prefetched
-#define PS_PROCESS_INJECT_INPAGE_ERRORS         0x00100000UL // Process should be given inpage errors - hardcoded in trap.asm too
-#define PS_PROCESS_FLAGS_VM_TOP_DOWN            0x00200000UL // Process memory allocations default to top-down
-#define PS_PROCESS_FLAGS_IMAGE_NOTIFY_DONE      0x00400000UL // We have sent a message for this image
-#define PS_PROCESS_FLAGS_PDE_UPDATE_NEEDED      0x00800000UL // The system PDEs need updating for this process (NT32 only)
-#define PS_PROCESS_FLAGS_VDM_ALLOWED            0x01000000UL // Process allowed to invoke NTVDM support
-#define PS_PROCESS_FLAGS_SMAP_ALLOWED           0x02000000UL // Process allowed to invoke SMAP support
-#define PS_PROCESS_FLAGS_CREATE_FAILED          0x04000000UL // Process create failed
+#define PS_PROCESS_FLAGS_CREATE_REPORTED        0x00000001UL // Create process
+debug call has occurred #define PS_PROCESS_FLAGS_NO_DEBUG_INHERIT
+0x00000002UL // Don't inherit debug port #define
+PS_PROCESS_FLAGS_PROCESS_EXITING        0x00000004UL // PspExitProcess entered
+#define PS_PROCESS_FLAGS_PROCESS_DELETE         0x00000008UL // Delete process
+has been issued #define PS_PROCESS_FLAGS_WOW64_SPLIT_PAGES      0x00000010UL //
+Wow64 split pages #define PS_PROCESS_FLAGS_VM_DELETED             0x00000020UL
+// VM is deleted #define PS_PROCESS_FLAGS_OUTSWAP_ENABLED        0x00000040UL //
+Outswap enabled #define PS_PROCESS_FLAGS_OUTSWAPPED             0x00000080UL //
+Outswapped #define PS_PROCESS_FLAGS_FORK_FAILED            0x00000100UL // Fork
+status #define PS_PROCESS_FLAGS_WOW64_4GB_VA_SPACE     0x00000200UL // Wow64
+process with 4gb virtual address space #define PS_PROCESS_FLAGS_ADDRESS_SPACE1
+0x00000400UL // Addr space state1 #define PS_PROCESS_FLAGS_ADDRESS_SPACE2
+0x00000800UL // Addr space state2 #define PS_PROCESS_FLAGS_SET_TIMER_RESOLUTION
+0x00001000UL // SetTimerResolution has been called #define
+PS_PROCESS_FLAGS_BREAK_ON_TERMINATION   0x00002000UL // Break on process
+termination #define PS_PROCESS_FLAGS_CREATING_SESSION       0x00004000UL //
+Process is creating a session #define PS_PROCESS_FLAGS_USING_WRITE_WATCH
+0x00008000UL // Process is using the write watch APIs #define
+PS_PROCESS_FLAGS_IN_SESSION             0x00010000UL // Process is in a session
+#define PS_PROCESS_FLAGS_OVERRIDE_ADDRESS_SPACE 0x00020000UL // Process must use
+native address space (Win64 only) #define PS_PROCESS_FLAGS_HAS_ADDRESS_SPACE
+0x00040000UL // This process has an address space #define
+PS_PROCESS_FLAGS_LAUNCH_PREFETCHED      0x00080000UL // Process launch was
+prefetched #define PS_PROCESS_INJECT_INPAGE_ERRORS         0x00100000UL //
+Process should be given inpage errors - hardcoded in trap.asm too #define
+PS_PROCESS_FLAGS_VM_TOP_DOWN            0x00200000UL // Process memory
+allocations default to top-down #define PS_PROCESS_FLAGS_IMAGE_NOTIFY_DONE
+0x00400000UL // We have sent a message for this image #define
+PS_PROCESS_FLAGS_PDE_UPDATE_NEEDED      0x00800000UL // The system PDEs need
+updating for this process (NT32 only) #define PS_PROCESS_FLAGS_VDM_ALLOWED
+0x01000000UL // Process allowed to invoke NTVDM support #define
+PS_PROCESS_FLAGS_SMAP_ALLOWED           0x02000000UL // Process allowed to
+invoke SMAP support #define PS_PROCESS_FLAGS_CREATE_FAILED          0x04000000UL
+// Process create failed
 
-#define PS_PROCESS_FLAGS_DEFAULT_IO_PRIORITY    0x38000000UL // The default I/O priority for created threads. (3 bits)
+#define PS_PROCESS_FLAGS_DEFAULT_IO_PRIORITY    0x38000000UL // The default I/O
+priority for created threads. (3 bits)
 
 #define PS_PROCESS_FLAGS_PRIORITY_SHIFT         27
 
@@ -330,29 +345,29 @@ typedef enum _PORT_INFORMATION_CLASS
 #define PS_PROCESS_FLAGS_EXECUTE_SPARE2         0x80000000UL //
 
 
-#define THREAD_TERMINATE                        (0x0001)  
-#define THREAD_SUSPEND_RESUME                   (0x0002)  
-#define THREAD_GET_CONTEXT                      (0x0008)  
-#define THREAD_SET_CONTEXT                      (0x0010)  
-#define THREAD_QUERY_INFORMATION                (0x0040)  
-#define THREAD_SET_INFORMATION                  (0x0020)  
+#define THREAD_TERMINATE                        (0x0001)
+#define THREAD_SUSPEND_RESUME                   (0x0002)
+#define THREAD_GET_CONTEXT                      (0x0008)
+#define THREAD_SET_CONTEXT                      (0x0010)
+#define THREAD_QUERY_INFORMATION                (0x0040)
+#define THREAD_SET_INFORMATION                  (0x0020)
 #define THREAD_SET_THREAD_TOKEN                 (0x0080)
 #define THREAD_IMPERSONATE                      (0x0100)
 #define THREAD_DIRECT_IMPERSONATION             (0x0200)
 
-#define PROCESS_TERMINATE                       (0x0001)  
-#define PROCESS_CREATE_THREAD                   (0x0002)  
-#define PROCESS_SET_SESSIONID                   (0x0004)  
-#define PROCESS_VM_OPERATION                    (0x0008)  
-#define PROCESS_VM_READ                         (0x0010)  
-#define PROCESS_VM_WRITE                        (0x0020)  
-#define PROCESS_DUP_HANDLE                      (0x0040)  
-#define PROCESS_CREATE_PROCESS                  (0x0080)  
-#define PROCESS_SET_QUOTA                       (0x0100)  
-#define PROCESS_SET_INFORMATION                 (0x0200)  
-#define PROCESS_QUERY_INFORMATION               (0x0400)  
-#define PROCESS_SUSPEND_RESUME                  (0x0800)  
-#define PROCESS_QUERY_LIMITED_INFORMATION       (0x1000)  
+#define PROCESS_TERMINATE                       (0x0001)
+#define PROCESS_CREATE_THREAD                   (0x0002)
+#define PROCESS_SET_SESSIONID                   (0x0004)
+#define PROCESS_VM_OPERATION                    (0x0008)
+#define PROCESS_VM_READ                         (0x0010)
+#define PROCESS_VM_WRITE                        (0x0020)
+#define PROCESS_DUP_HANDLE                      (0x0040)
+#define PROCESS_CREATE_PROCESS                  (0x0080)
+#define PROCESS_SET_QUOTA                       (0x0100)
+#define PROCESS_SET_INFORMATION                 (0x0200)
+#define PROCESS_QUERY_INFORMATION               (0x0400)
+#define PROCESS_SUSPEND_RESUME                  (0x0800)
+#define PROCESS_QUERY_LIMITED_INFORMATION       (0x1000)
 
 
 #define LPC_REQUEST                             1
@@ -445,27 +460,28 @@ typedef struct _DEBUG_EVENT
 } DEBUG_EVENT, *PDEBUG_EVENT;
 
 
-typedef struct _OBJECT_TYPE_INITIALIZER                                                                                                                                      // 25 elements, 0x70 bytes (sizeof)
+typedef struct _OBJECT_TYPE_INITIALIZER // 25 elements, 0x70 bytes (sizeof)
 {
     / *0x000* /     UINT16       Length;
-    union                                                                                                                                                                       // 2 elements, 0x1 bytes (sizeof)
+    union // 2 elements, 0x1 bytes (sizeof)
     {
         / *0x002* /         UINT8        ObjectTypeFlags;
-        struct                                                                                                                                                                  // 7 elements, 0x1 bytes (sizeof)
+        struct // 7 elements, 0x1 bytes (sizeof)
         {
-            / *0x002* /             UINT8        CaseInsensitive : 1;                                                                                                                                   // 0 BitPosition
-            / *0x002* /             UINT8        UnnamedObjectsOnly : 1;                                                                                                                                // 1 BitPosition
-            / *0x002* /             UINT8        UseDefaultObject : 1;                                                                                                                                  // 2 BitPosition
-            / *0x002* /             UINT8        SecurityRequired : 1;                                                                                                                                  // 3 BitPosition
-            / *0x002* /             UINT8        MaintainHandleCount : 1;                                                                                                                               // 4 BitPosition
-            / *0x002* /             UINT8        MaintainTypeList : 1;                                                                                                                                  // 5 BitPosition
-            / *0x002* /             UINT8        SupportsObjectCallbacks : 1;                                                                                                                           // 6 BitPosition
+            / *0x002* /             UINT8        CaseInsensitive : 1;
+// 0 BitPosition / *0x002* /             UINT8        UnnamedObjectsOnly : 1;
+// 1 BitPosition / *0x002* /             UINT8        UseDefaultObject : 1;
+// 2 BitPosition / *0x002* /             UINT8        SecurityRequired : 1;
+// 3 BitPosition / *0x002* /             UINT8        MaintainHandleCount : 1;
+// 4 BitPosition / *0x002* /             UINT8        MaintainTypeList : 1;
+// 5 BitPosition / *0x002* /             UINT8        SupportsObjectCallbacks :
+1; // 6 BitPosition
         };
     };
     / *0x004* /     ULONG32      ObjectTypeCode;
     / *0x008* /     ULONG32      InvalidAttributes;
-    / *0x00C* /     struct _GENERIC_MAPPING GenericMapping;                                                                                                                                     // 4 elements, 0x10 bytes (sizeof)
-    / *0x01C* /     ULONG32      ValidAccessMask;
+    / *0x00C* /     struct _GENERIC_MAPPING GenericMapping;
+// 4 elements, 0x10 bytes (sizeof) / *0x01C* /     ULONG32      ValidAccessMask;
     / *0x020* /     ULONG32      RetainAccess;
     / *0x024* /     enum _POOL_TYPE PoolType;
     / *0x028* /     ULONG32      DefaultPagedPoolCharge;
@@ -485,35 +501,35 @@ typedef struct _EX_PUSH_LOCK                 // 7 elements, 0x8 bytes (sizeof)
     {
         struct                               // 5 elements, 0x8 bytes (sizeof)
         {
-            / *0x000* /             UINT64       Locked : 1;         // 0 BitPosition
-            / *0x000* /             UINT64       Waiting : 1;        // 1 BitPosition
-            / *0x000* /             UINT64       Waking : 1;         // 2 BitPosition
-            / *0x000* /             UINT64       MultipleShared : 1; // 3 BitPosition
-            / *0x000* /             UINT64       Shared : 60;        // 4 BitPosition
+            / *0x000* /             UINT64       Locked : 1;         // 0
+BitPosition / *0x000* /             UINT64       Waiting : 1;        // 1
+BitPosition / *0x000* /             UINT64       Waking : 1;         // 2
+BitPosition / *0x000* /             UINT64       MultipleShared : 1; // 3
+BitPosition / *0x000* /             UINT64       Shared : 60;        // 4
+BitPosition
         };
         / *0x000* /         UINT64       Value;
         / *0x000* /         VOID*        Ptr;
     };
 }EX_PUSH_LOCK, *PEX_PUSH_LOCK;
-typedef struct _OBJECT_TYPE_S                   // 12 elements, 0xD0 bytes (sizeof)
+typedef struct _OBJECT_TYPE_S                   // 12 elements, 0xD0 bytes
+(sizeof)
 {
-    / *0x000* /     struct _LIST_ENTRY TypeList;              // 2 elements, 0x10 bytes (sizeof)
-    / *0x010* /     struct _UNICODE_STRING Name;              // 3 elements, 0x10 bytes (sizeof)
-    / *0x020* /     VOID*        DefaultObject;
-    / *0x028* /     UINT8        Index;
-    / *0x029* /     UINT8        _PADDING0_[0x3];
+    / *0x000* /     struct _LIST_ENTRY TypeList;              // 2 elements,
+0x10 bytes (sizeof) / *0x010* /     struct _UNICODE_STRING Name;              //
+3 elements, 0x10 bytes (sizeof) / *0x020* /     VOID*        DefaultObject; /
+*0x028* /     UINT8        Index; / *0x029* /     UINT8        _PADDING0_[0x3];
     / *0x02C* /     ULONG32      TotalNumberOfObjects;
     / *0x030* /     ULONG32      TotalNumberOfHandles;
     / *0x034* /     ULONG32      HighWaterNumberOfObjects;
     / *0x038* /     ULONG32      HighWaterNumberOfHandles;
     / *0x03C* /     UINT8        _PADDING1_[0x4];
-    / *0x040* /     struct _OBJECT_TYPE_INITIALIZER TypeInfo; // 25 elements, 0x70 bytes (sizeof)
-    / *0x0B0* /     struct _EX_PUSH_LOCK TypeLock;            // 7 elements, 0x8 bytes (sizeof)
-    / *0x0B8* /     ULONG32      Key;
-    / *0x0BC* /     UINT8        _PADDING2_[0x4];
-    / *0x0C0* /     struct _LIST_ENTRY CallbackList;          // 2 elements, 0x10 bytes (sizeof)
-}OBJECT_TYPE_S, *POBJECT_TYPE_S;
-typedef struct _MODULE_INFO
+    / *0x040* /     struct _OBJECT_TYPE_INITIALIZER TypeInfo; // 25 elements,
+0x70 bytes (sizeof) / *0x0B0* /     struct _EX_PUSH_LOCK TypeLock;            //
+7 elements, 0x8 bytes (sizeof) / *0x0B8* /     ULONG32      Key; / *0x0BC* /
+UINT8        _PADDING2_[0x4]; / *0x0C0* /     struct _LIST_ENTRY CallbackList;
+// 2 elements, 0x10 bytes (sizeof) }OBJECT_TYPE_S, *POBJECT_TYPE_S; typedef
+struct _MODULE_INFO
 {
     ULONG64         UnKown1;
     UNICODE_STRING  FileName;       //+0x4

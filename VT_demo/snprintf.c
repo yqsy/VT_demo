@@ -35,9 +35,9 @@
  *    original.  Also, there is now a builtin-test, just compile with:
  *           gcc -DTEST_SNPRINTF -o snprintf snprintf.c -lm
  *    and run snprintf for results.
- * 
+ *
  *  Thomas Roessler <roessler@guug.de> 01/27/98 for mutt 0.89i
- *    The PGP code was using unsigned hexadecimal formats. 
+ *    The PGP code was using unsigned hexadecimal formats.
  *    Unfortunately, unsigned formats simply didn't work.
  *
  *  Michael Elkins <me@cs.hmc.edu> 03/05/98 for mutt 0.90.8
@@ -61,116 +61,84 @@
 #define HAVE_LONG_LONG
 
 #ifdef HAVE_STRING_H
-# include <string.h>
+#include <string.h>
 #endif
 
 #ifdef HAVE_STRINGS_H
-# include <strings.h>
+#include <strings.h>
 #endif
 #ifdef HAVE_CTYPE_H
-# include <ctype.h>
+#include <ctype.h>
 #endif
-#include <sys/types.h>
 #include <stdarg.h>
+#include <sys/types.h>
 #ifdef HAVE_STDLIB_H
-# include <stdlib.h>
+#include <stdlib.h>
 #endif
 
-#if defined(HAVE_SNPRINTF) && defined(HAVE_VSNPRINTF) && defined(HAVE_C99_VSNPRINTF)
+#if defined(HAVE_SNPRINTF) && defined(HAVE_VSNPRINTF) &&                       \
+    defined(HAVE_C99_VSNPRINTF)
 /* only include stdio.h if we are not re-defining snprintf or vsnprintf */
-# include <stdio.h>
- /* make the compiler happy with an empty file */
-void dummy_snprintf (
-  void
-)
-{
-}
+#include <stdio.h>
+/* make the compiler happy with an empty file */
+void dummy_snprintf(void) {}
 #else
 
-# ifdef HAVE_LONG_LONG
-#  define LLONG long long
-# else
-#  define LLONG long
-# endif
+#ifdef HAVE_LONG_LONG
+#define LLONG long long
+#else
+#define LLONG long
+#endif
 
-# ifdef isdigit
-#  undef isdigit
-# endif
-# define isdigit(c) ((c) >= '0' && (c) <= '9')
+#ifdef isdigit
+#undef isdigit
+#endif
+#define isdigit(c) ((c) >= '0' && (c) <= '9')
 
-static size_t dopr (
-  char *buffer,
-  size_t maxlen,
-  const char *format,
-  va_list args
-);
-static void fmtstr (
-  char *buffer,
-  size_t * currlen,
-  size_t maxlen,
-  char *value,
-  int flags,
-  int min,
-  int max
-);
-static void fmtint (
-  char *buffer,
-  size_t * currlen,
-  size_t maxlen,
-  long long value,
-  int base,
-  int min,
-  int max,
-  int flags
-);
-static void dopr_outch (
-  char *buffer,
-  size_t * currlen,
-  size_t maxlen,
-  char c
-);
+static size_t dopr(char *buffer, size_t maxlen, const char *format,
+                   va_list args);
+static void fmtstr(char *buffer, size_t *currlen, size_t maxlen, char *value,
+                   int flags, int min, int max);
+static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
+                   long long value, int base, int min, int max, int flags);
+static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c);
 
 /*
  * dopr(): poor man's version of doprintf
  */
 
 /* format read states */
-# define DP_S_DEFAULT 0
-# define DP_S_FLAGS   1
-# define DP_S_MIN     2
-# define DP_S_DOT     3
-# define DP_S_MAX     4
-# define DP_S_MOD     5
-# define DP_S_CONV    6
-# define DP_S_DONE    7
+#define DP_S_DEFAULT 0
+#define DP_S_FLAGS 1
+#define DP_S_MIN 2
+#define DP_S_DOT 3
+#define DP_S_MAX 4
+#define DP_S_MOD 5
+#define DP_S_CONV 6
+#define DP_S_DONE 7
 
 /* format flags - Bits */
-# define DP_F_MINUS      (1 << 0)
-# define DP_F_PLUS       (1 << 1)
-# define DP_F_SPACE      (1 << 2)
-# define DP_F_NUM        (1 << 3)
-# define DP_F_ZERO       (1 << 4)
-# define DP_F_UP         (1 << 5)
-# define DP_F_UNSIGNED   (1 << 6)
+#define DP_F_MINUS (1 << 0)
+#define DP_F_PLUS (1 << 1)
+#define DP_F_SPACE (1 << 2)
+#define DP_F_NUM (1 << 3)
+#define DP_F_ZERO (1 << 4)
+#define DP_F_UP (1 << 5)
+#define DP_F_UNSIGNED (1 << 6)
 
 /* Conversion Flags */
-# define DP_C_SHORT   1
-# define DP_C_LONG    2
-# define DP_C_LDOUBLE 3
-# define DP_C_LLONG   4
+#define DP_C_SHORT 1
+#define DP_C_LONG 2
+#define DP_C_LDOUBLE 3
+#define DP_C_LLONG 4
 
-# define char_to_int(p) ((p)- '0')
-# ifndef MAX
-#  define MAX(p,q) (((p) >= (q)) ? (p) : (q))
-# endif
+#define char_to_int(p) ((p) - '0')
+#ifndef MAX
+#define MAX(p, q) (((p) >= (q)) ? (p) : (q))
+#endif
 
-static size_t dopr (
-  char *buffer,
-  size_t maxlen,
-  const char *format,
-  va_list args
-)
-{
+static size_t dopr(char *buffer, size_t maxlen, const char *format,
+                   va_list args) {
   char ch;
   LLONG value;
   char *strvalue;
@@ -195,7 +163,7 @@ static size_t dopr (
       if (ch == '%')
         state = DP_S_FLAGS;
       else
-        dopr_outch (buffer, &currlen, maxlen, ch);
+        dopr_outch(buffer, &currlen, maxlen, ch);
       ch = *format++;
       break;
     case DP_S_FLAGS:
@@ -226,12 +194,11 @@ static size_t dopr (
       }
       break;
     case DP_S_MIN:
-      if (isdigit ((unsigned char) ch)) {
-        min = 10 * min + char_to_int (ch);
+      if (isdigit((unsigned char)ch)) {
+        min = 10 * min + char_to_int(ch);
         ch = *format++;
       } else if (ch == '*') {
-        min = va_arg (args, int
-        );
+        min = va_arg(args, int);
         ch = *format++;
         state = DP_S_DOT;
       } else {
@@ -247,14 +214,13 @@ static size_t dopr (
       }
       break;
     case DP_S_MAX:
-      if (isdigit ((unsigned char) ch)) {
+      if (isdigit((unsigned char)ch)) {
         if (max < 0)
           max = 0;
-        max = 10 * max + char_to_int (ch);
+        max = 10 * max + char_to_int(ch);
         ch = *format++;
       } else if (ch == '*') {
-        max = va_arg (args, int
-        );
+        max = va_arg(args, int);
         ch = *format++;
         state = DP_S_MOD;
       } else {
@@ -270,7 +236,7 @@ static size_t dopr (
       case 'l':
         cflags = DP_C_LONG;
         ch = *format++;
-        if (ch == 'l') {        /* It's a long long */
+        if (ch == 'l') { /* It's a long long */
           cflags = DP_C_LLONG;
           ch = *format++;
         }
@@ -289,67 +255,52 @@ static size_t dopr (
       case 'd':
       case 'i':
         if (cflags == DP_C_SHORT)
-          value = va_arg (args, int
-          );
+          value = va_arg(args, int);
         else if (cflags == DP_C_LONG)
-          value = va_arg (args, long int
-          );
+          value = va_arg(args, long int);
         else if (cflags == DP_C_LLONG)
-          value = va_arg (args, LLONG);
+          value = va_arg(args, LLONG);
         else
-          value = va_arg (args, int
-          );
-        fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
+          value = va_arg(args, int);
+        fmtint(buffer, &currlen, maxlen, value, 10, min, max, flags);
         break;
       case 'o':
         flags |= DP_F_UNSIGNED;
         if (cflags == DP_C_SHORT)
-          value = va_arg (args, unsigned int
-          );
+          value = va_arg(args, unsigned int);
         else if (cflags == DP_C_LONG)
-          value = (long) va_arg (args, unsigned long int
-          );
+          value = (long)va_arg(args, unsigned long int);
         else if (cflags == DP_C_LLONG)
-          value = (long) va_arg (args, unsigned LLONG
-          );
+          value = (long)va_arg(args, unsigned LLONG);
         else
-          value = (long) va_arg (args, unsigned int
-          );
-        fmtint (buffer, &currlen, maxlen, value, 8, min, max, flags);
+          value = (long)va_arg(args, unsigned int);
+        fmtint(buffer, &currlen, maxlen, value, 8, min, max, flags);
         break;
       case 'u':
         flags |= DP_F_UNSIGNED;
         if (cflags == DP_C_SHORT)
-          value = va_arg (args, unsigned int
-          );
+          value = va_arg(args, unsigned int);
         else if (cflags == DP_C_LONG)
-          value = (long) va_arg (args, unsigned long int
-          );
+          value = (long)va_arg(args, unsigned long int);
         else if (cflags == DP_C_LLONG)
-          value = (LLONG) va_arg (args, unsigned LLONG
-          );
+          value = (LLONG)va_arg(args, unsigned LLONG);
         else
-          value = (long) va_arg (args, unsigned int
-          );
-        fmtint (buffer, &currlen, maxlen, value, 10, min, max, flags);
+          value = (long)va_arg(args, unsigned int);
+        fmtint(buffer, &currlen, maxlen, value, 10, min, max, flags);
         break;
       case 'X':
         flags |= DP_F_UP;
       case 'x':
         flags |= DP_F_UNSIGNED;
         if (cflags == DP_C_SHORT)
-          value = va_arg (args, unsigned int
-          );
+          value = va_arg(args, unsigned int);
         else if (cflags == DP_C_LONG)
-          value = (long) va_arg (args, unsigned long int
-          );
+          value = (long)va_arg(args, unsigned long int);
         else if (cflags == DP_C_LLONG)
-          value = (LLONG) va_arg (args, unsigned LLONG
-          );
+          value = (LLONG)va_arg(args, unsigned LLONG);
         else
-          value = (long) va_arg (args, unsigned int
-          );
-        fmtint (buffer, &currlen, maxlen, value, 16, min, max, flags);
+          value = (long)va_arg(args, unsigned int);
+        fmtint(buffer, &currlen, maxlen, value, 16, min, max, flags);
         break;
       case 'f':
         break;
@@ -362,49 +313,44 @@ static size_t dopr (
       case 'g':
         break;
       case 'c':
-        dopr_outch (buffer, &currlen, maxlen, va_arg (args, char)
-        );
+        dopr_outch(buffer, &currlen, maxlen, va_arg(args, char));
         break;
       case 's':
-        strvalue = va_arg (args, char *
-        );
+        strvalue = va_arg(args, char *);
         if (max == -1) {
-          max = (int)strlen (strvalue);
+          max = (int)strlen(strvalue);
         }
         if (min > 0 && max >= 0 && min > max)
           max = min;
-        fmtstr (buffer, &currlen, maxlen, strvalue, flags, min, max);
+        fmtstr(buffer, &currlen, maxlen, strvalue, flags, min, max);
         break;
       case 'p':
         flags |= DP_F_UNSIGNED | DP_F_UP;
-        strvalue = va_arg (args, void *
-        );
-        fmtint (buffer, &currlen, maxlen, (long long) strvalue, 16, min, max, flags);
+        strvalue = va_arg(args, void *);
+        fmtint(buffer, &currlen, maxlen, (long long)strvalue, 16, min, max,
+               flags);
         break;
       case 'n':
         if (cflags == DP_C_SHORT) {
           short int *num;
-          num = va_arg (args, short int *
-          );
-          *num = (short int) currlen;
+          num = va_arg(args, short int *);
+          *num = (short int)currlen;
         } else if (cflags == DP_C_LONG) {
           long int *num;
-          num = va_arg (args, long int *
-          );
-          *num = (long int) currlen;
+          num = va_arg(args, long int *);
+          *num = (long int)currlen;
         } else if (cflags == DP_C_LLONG) {
           LLONG *num;
-          num = va_arg (args, LLONG *);
-          *num = (LLONG) currlen;
+          num = va_arg(args, LLONG *);
+          *num = (LLONG)currlen;
         } else {
           int *num;
-          num = va_arg (args, int *
-          );
+          num = va_arg(args, int *);
           *num = (int)currlen;
         }
         break;
       case '%':
-        dopr_outch (buffer, &currlen, maxlen, ch);
+        dopr_outch(buffer, &currlen, maxlen, ch);
         break;
       case 'w':
         /* not supported yet, treat as next char */
@@ -423,7 +369,7 @@ static size_t dopr (
       break;
     default:
       /* hmm? */
-      break;                    /* some picky compilers need this */
+      break; /* some picky compilers need this */
     }
   }
   if (maxlen != 0) {
@@ -436,44 +382,37 @@ static size_t dopr (
   return currlen;
 }
 
-static void fmtstr (
-  char *buffer,
-  size_t * currlen,
-  size_t maxlen,
-  char *value,
-  int flags,
-  int min,
-  int max
-)
-{
-  int padlen, strln;            /* amount to pad */
+static void fmtstr(char *buffer, size_t *currlen, size_t maxlen, char *value,
+                   int flags, int min, int max) {
+  int padlen, strln; /* amount to pad */
   int cnt = 0;
 
-# ifdef DEBUG_SNPRINTF
-  printf ("fmtstr min=%d max=%d s=[%s]\n", min, max, value);
-# endif
+#ifdef DEBUG_SNPRINTF
+  printf("fmtstr min=%d max=%d s=[%s]\n", min, max, value);
+#endif
   if (value == 0) {
     value = "<NULL>";
   }
 
-  for (strln = 0; value[strln]; ++strln);       /* strlen */
+  for (strln = 0; value[strln]; ++strln)
+    ; /* strlen */
   padlen = min - strln;
   if (padlen < 0)
     padlen = 0;
   if (flags & DP_F_MINUS)
-    padlen = -padlen;           /* Left Justify */
+    padlen = -padlen; /* Left Justify */
 
   while ((padlen > 0) && (cnt < max)) {
-    dopr_outch (buffer, currlen, maxlen, ' ');
+    dopr_outch(buffer, currlen, maxlen, ' ');
     --padlen;
     ++cnt;
   }
   while (*value && (cnt < max)) {
-    dopr_outch (buffer, currlen, maxlen, *value++);
+    dopr_outch(buffer, currlen, maxlen, *value++);
     ++cnt;
   }
   while ((padlen < 0) && (cnt < max)) {
-    dopr_outch (buffer, currlen, maxlen, ' ');
+    dopr_outch(buffer, currlen, maxlen, ' ');
     ++padlen;
     ++cnt;
   }
@@ -481,36 +420,27 @@ static void fmtstr (
 
 /* Have to handle DP_F_NUM (ie 0x and 0 alternates) */
 
-static void fmtint (
-  char *buffer,
-  size_t * currlen,
-  size_t maxlen,
-  long long value,
-  int base,
-  int min,
-  int max,
-  int flags
-)
-{
+static void fmtint(char *buffer, size_t *currlen, size_t maxlen,
+                   long long value, int base, int min, int max, int flags) {
   int signvalue = 0;
   unsigned long long uvalue;
   char convert[20];
   int place = 0;
-  int spadlen = 0;              /* amount to space pad */
-  int zpadlen = 0;              /* amount to zero pad */
+  int spadlen = 0; /* amount to space pad */
+  int zpadlen = 0; /* amount to zero pad */
   int caps = 0;
 
   if (max < 0)
     max = 0;
 
-  uvalue = (unsigned long long) value;
+  uvalue = (unsigned long long)value;
 
   if (!(flags & DP_F_UNSIGNED)) {
     if (value < 0) {
       signvalue = '-';
-      uvalue = (unsigned long long) -value;
+      uvalue = (unsigned long long)-value;
     } else {
-      if (flags & DP_F_PLUS)    /* Do a sign (+/i) */
+      if (flags & DP_F_PLUS) /* Do a sign (+/i) */
         signvalue = '+';
       else if (flags & DP_F_SPACE)
         signvalue = ' ';
@@ -518,104 +448,87 @@ static void fmtint (
   }
 
   if (flags & DP_F_UP)
-    caps = 1;                   /* Should characters be upper case? */
+    caps = 1; /* Should characters be upper case? */
 
   do {
-    convert[place++] = (caps ? "0123456789ABCDEF" : "0123456789abcdef")
-      [uvalue % (unsigned) base];
-    uvalue = (uvalue / (unsigned) base);
+    convert[place++] = (caps ? "0123456789ABCDEF"
+                             : "0123456789abcdef")[uvalue % (unsigned)base];
+    uvalue = (uvalue / (unsigned)base);
   } while (uvalue && (place < 20));
   if (place == 20)
     place--;
   convert[place] = 0;
 
   zpadlen = max - place;
-  spadlen = min - MAX (max, place) - (signvalue ? 1 : 0);
+  spadlen = min - MAX(max, place) - (signvalue ? 1 : 0);
   if (zpadlen < 0)
     zpadlen = 0;
   if (spadlen < 0)
     spadlen = 0;
   if (flags & DP_F_ZERO) {
-    zpadlen = MAX (zpadlen, spadlen);
+    zpadlen = MAX(zpadlen, spadlen);
     spadlen = 0;
   }
   if (flags & DP_F_MINUS)
-    spadlen = -spadlen;         /* Left Justifty */
+    spadlen = -spadlen; /* Left Justifty */
 
-# ifdef DEBUG_SNPRINTF
-  printf ("zpad: %d, spad: %d, min: %d, max: %d, place: %d\n", zpadlen, spadlen, min, max, place);
-# endif
+#ifdef DEBUG_SNPRINTF
+  printf("zpad: %d, spad: %d, min: %d, max: %d, place: %d\n", zpadlen, spadlen,
+         min, max, place);
+#endif
 
   /* Spaces */
   while (spadlen > 0) {
-    dopr_outch (buffer, currlen, maxlen, ' ');
+    dopr_outch(buffer, currlen, maxlen, ' ');
     --spadlen;
   }
 
   /* Sign */
   if (signvalue)
-    dopr_outch (buffer, currlen, maxlen, (char) signvalue);
+    dopr_outch(buffer, currlen, maxlen, (char)signvalue);
 
   /* Zeros */
   if (zpadlen > 0) {
     while (zpadlen > 0) {
-      dopr_outch (buffer, currlen, maxlen, '0');
+      dopr_outch(buffer, currlen, maxlen, '0');
       --zpadlen;
     }
   }
 
   /* Digits */
   while (place > 0)
-    dopr_outch (buffer, currlen, maxlen, convert[--place]);
+    dopr_outch(buffer, currlen, maxlen, convert[--place]);
 
   /* Left Justified spaces */
   while (spadlen < 0) {
-    dopr_outch (buffer, currlen, maxlen, ' ');
+    dopr_outch(buffer, currlen, maxlen, ' ');
     ++spadlen;
   }
 }
 
-static void dopr_outch (
-  char *buffer,
-  size_t * currlen,
-  size_t maxlen,
-  char c
-)
-{
+static void dopr_outch(char *buffer, size_t *currlen, size_t maxlen, char c) {
   if (*currlen < maxlen) {
     buffer[(*currlen)] = c;
   }
   (*currlen)++;
 }
 
-# if !defined(HAVE_VSNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
-int vsnprintf (
-  char *str,
-  size_t count,
-  const char *fmt,
-  va_list args
-)
-{
-  return (int)dopr (str, count, fmt, args);
+#if !defined(HAVE_VSNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
+int vsnprintf(char *str, size_t count, const char *fmt, va_list args) {
+  return (int)dopr(str, count, fmt, args);
 }
-# endif
+#endif
 
-# if !defined(HAVE_SNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
-int snprintf (
-  char *str,
-  size_t count,
-  const char *fmt,
-  ...
-)
-{
+#if !defined(HAVE_SNPRINTF) || !defined(HAVE_C99_VSNPRINTF)
+int snprintf(char *str, size_t count, const char *fmt, ...) {
   size_t ret;
   va_list ap;
 
-  va_start (ap, fmt);
-  ret = vsnprintf (str, count, fmt, ap);
-  va_end (ap);
+  va_start(ap, fmt);
+  ret = vsnprintf(str, count, fmt, ap);
+  va_end(ap);
   return (int)ret;
 }
-# endif
+#endif
 
 #endif

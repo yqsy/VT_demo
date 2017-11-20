@@ -12,20 +12,20 @@ enum _CPU_VENDOR UtilCPUVendor();
 /// </summary>
 /// <param name="pSize">Size of module</param>
 /// <returns>Found address, NULL if not found</returns>
-PVOID UtilKernelBase( OUT PULONG pSize );
+PVOID UtilKernelBase(OUT PULONG pSize);
 
 /// <summary>
 /// Gets SSDT base - KiSystemServiceTable
 /// </summary>
 /// <returns>SSDT base, NULL if not found</returns>
-struct _SYSTEM_SERVICE_DESCRIPTOR_TABLE* UtilSSDTBase();
+struct _SYSTEM_SERVICE_DESCRIPTOR_TABLE *UtilSSDTBase();
 
 /// <summary>
 /// Gets the SSDT entry address by index.
 /// </summary>
 /// <param name="index">Service index</param>
 /// <returns>Found service address, NULL if not found</returns>
-PVOID UtilSSDTEntry( IN ULONG index );
+PVOID UtilSSDTEntry(IN ULONG index);
 
 /// <summary>
 /// Gather info about used physical pages
@@ -40,7 +40,8 @@ NTSTATUS UtilQueryPhysicalMemory();
 /// <param name="size">Size of region</param>
 /// <param name="protection">New protection flags</param>
 /// <returns>Status code</returns>
-NTSTATUS UtilProtectNonpagedMemory( IN PVOID ptr, IN ULONG64 size, IN ULONG protection );
+NTSTATUS UtilProtectNonpagedMemory(IN PVOID ptr, IN ULONG64 size,
+                                   IN ULONG protection);
 
 /// <summary>
 /// Search for pattern
@@ -52,7 +53,9 @@ NTSTATUS UtilProtectNonpagedMemory( IN PVOID ptr, IN ULONG64 size, IN ULONG prot
 /// <param name="size">Address range to search in</param>
 /// <param name="ppFound">Found location</param>
 /// <returns>Status code</returns>
-NTSTATUS UtilSearchPattern( IN PCUCHAR pattern, IN UCHAR wildcard, IN ULONG_PTR len, IN const VOID* base, IN ULONG_PTR size, OUT PVOID* ppFound );
+NTSTATUS UtilSearchPattern(IN PCUCHAR pattern, IN UCHAR wildcard,
+                           IN ULONG_PTR len, IN const VOID *base,
+                           IN ULONG_PTR size, OUT PVOID *ppFound);
 
 /// <summary>
 /// Find pattern in kernel PE section
@@ -63,4 +66,6 @@ NTSTATUS UtilSearchPattern( IN PCUCHAR pattern, IN UCHAR wildcard, IN ULONG_PTR 
 /// <param name="len">Pattern length</param>
 /// <param name="ppFound">Found address</param>
 /// <returns>Status code</returns>
-NTSTATUS UtilScanSection( IN PCCHAR section, IN PCUCHAR pattern, IN UCHAR wildcard, IN ULONG_PTR len, OUT PVOID* ppFound );
+NTSTATUS UtilScanSection(IN PCCHAR section, IN PCUCHAR pattern,
+                         IN UCHAR wildcard, IN ULONG_PTR len,
+                         OUT PVOID *ppFound);

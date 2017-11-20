@@ -14,14 +14,14 @@ NTSTATUS SHInitHook();
 /// <param name="hookPtr">Hook address</param>
 /// <param name="argCount">Number of function arguments</param>
 /// <returns>Status code</returns>
-NTSTATUS SHHookSyscall( IN ULONG index, IN PVOID hookPtr, IN CHAR argCount );
+NTSTATUS SHHookSyscall(IN ULONG index, IN PVOID hookPtr, IN CHAR argCount);
 
 /// <summary>
 /// Restore original SSDT entry
 /// </summary>
 /// <param name="index">SSDT index</param>
 /// <returns>Status code</returns>
-NTSTATUS SHRestoreSyscall( IN ULONG index );
+NTSTATUS SHRestoreSyscall(IN ULONG index);
 
 /// <summary>
 /// Unhook LSTAR

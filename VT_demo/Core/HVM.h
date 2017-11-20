@@ -12,10 +12,10 @@ BOOLEAN HvmIsHVSupported();
 /// </summary>
 VOID HvmCheckFeatures();
 
- /// <summary>
- /// Virtualize each CPU
- /// </summary>
- /// <returns>Status code</returns>
+/// <summary>
+/// Virtualize each CPU
+/// </summary>
+/// <returns>Status code</returns>
 NTSTATUS StartHV();
 
 /// <summary>
