@@ -17,14 +17,14 @@ NTSTATUS HvmSubvertCpu (
 
     KdPrint (("HvmSubvertCpu(): Running on processor #%d\n", KeGetCurrentProcessorNumber ()));
 
-    // æ£€æŸ¥IA32_FEATURE_CONTROLå¯„å­˜å™¨çš„Lockä½
+    // ¼ì²éIA32_FEATURE_CONTROL¼Ä´æÆ÷µÄLockÎ»
     if (!(__readmsr(MSR_IA32_FEATURE_CONTROL) & FEATURE_CONTROL_LOCKED))
     {
         KdPrint(("VmxInitialize() IA32_FEATURE_CONTROL bit[0] = 0!\n"));
         return STATUS_UNSUCCESSFUL;
     }
 
-    // æ£€æŸ¥IA32_FEATURE_CONTROLå¯„å­˜å™¨çš„Enable VMX outside SMXä½
+    // ¼ì²éIA32_FEATURE_CONTROL¼Ä´æÆ÷µÄEnable VMX outside SMXÎ»
     if (!(__readmsr(MSR_IA32_FEATURE_CONTROL) & FEATURE_CONTROL_VMXON_ENABLED))
     {
         KdPrint(("VmxInitialize() IA32_FEATURE_CONTROL bit[2] = 0!\n"));
@@ -33,7 +33,7 @@ NTSTATUS HvmSubvertCpu (
 
     PhyAddr.QuadPart = -1;
     //
-    // ä¸ºVMXONç»“æ„åˆ†é…ç©ºé—´ (Allocate VMXON region)
+    // ÎªVMXON½á¹¹·ÖÅä¿Õ¼ä (Allocate VMXON region)
     //
     pCpu->OriginaVmxonR = MmAllocateContiguousMemory(PAGE_SIZE, PhyAddr);
     if (!pCpu->OriginaVmxonR)
@@ -44,7 +44,7 @@ NTSTATUS HvmSubvertCpu (
     RtlZeroMemory (pCpu->OriginaVmxonR, PAGE_SIZE);
 
     //
-    // ä¸ºVMCSç»“æ„åˆ†é…ç©ºé—´ (Allocate VMCS)
+    // ÎªVMCS½á¹¹·ÖÅä¿Õ¼ä (Allocate VMCS)
     //
     pCpu->OriginalVmcs = MmAllocateContiguousMemory(PAGE_SIZE, PhyAddr);
     if (!pCpu->OriginalVmcs)
@@ -54,7 +54,7 @@ NTSTATUS HvmSubvertCpu (
     }
     RtlZeroMemory (pCpu->OriginalVmcs, PAGE_SIZE);
 
-    // ä¸ºGueståˆ†é…å†…æ ¸æ ˆ(æŒ‰é¡µåˆ†é…), å¤§å°ä¸Hostç›¸åŒ
+    // ÎªGuest·ÖÅäÄÚºËÕ»(°´Ò³·ÖÅä), ´óĞ¡ÓëHostÏàÍ¬
     pCpu->VMM_Stack = ExAllocatePoolWithTag (NonPagedPool, 2 * PAGE_SIZE, MEM_TAG);
     if (!pCpu->VMM_Stack)
     {
@@ -64,8 +64,8 @@ NTSTATUS HvmSubvertCpu (
     RtlZeroMemory (pCpu->VMM_Stack, 2 * PAGE_SIZE);
 
   //
-  // å‡†å¤‡VMè¦ç”¨åˆ°çš„æ•°æ®ç»“æ„ (VMXON & VMCS )
-  // GuestRipå’ŒGuestRspä¼šè¢«å¡«è¿›VMCSç»“æ„ï¼Œä»£è¡¨GueståŸæœ¬çš„ä»£ç ä½ç½®å’Œæ ˆé¡¶æŒ‡é’ˆ
+  // ×¼±¸VMÒªÓÃµ½µÄÊı¾İ½á¹¹ (VMXON & VMCS )
+  // GuestRipºÍGuestRsp»á±»Ìî½øVMCS½á¹¹£¬´ú±íGuestÔ­±¾µÄ´úÂëÎ»ÖÃºÍÕ»¶¥Ö¸Õë
   //
 
   set_in_cr4 (X86_CR4_VMXE);
@@ -79,10 +79,10 @@ NTSTATUS HvmSubvertCpu (
       return STATUS_UNSUCCESSFUL;
   }
 
-  //============================= é…ç½®VMCS ================================
+  //============================= ÅäÖÃVMCS ================================
   PhyAddr = MmGetPhysicalAddress(pCpu->OriginalVmcs);
-  __vmx_vmclear (&PhyAddr);  // å–æ¶ˆå½“å‰çš„VMCSçš„æ¿€æ´»çŠ¶æ€
-  __vmx_vmptrld (&PhyAddr);  // åŠ è½½æ–°çš„VMCSå¹¶è®¾ä¸ºæ¿€æ´»çŠ¶æ€
+  __vmx_vmclear (&PhyAddr);  // È¡Ïûµ±Ç°µÄVMCSµÄ¼¤»î×´Ì¬
+  __vmx_vmptrld (&PhyAddr);  // ¼ÓÔØĞÂµÄVMCS²¢ÉèÎª¼¤»î×´Ì¬
 
   VMM_Stack = (ULONG_PTR)pCpu->VMM_Stack + 2 * PAGE_SIZE - 8;
   if ( VmxSetupVMCS (VMM_Stack, CmGuestEip, GuestRsp) )
@@ -93,9 +93,9 @@ NTSTATUS HvmSubvertCpu (
       return STATUS_UNSUCCESSFUL;
   }
 
-  InterlockedIncrement (&g_uSubvertedCPUs);  // å·²ä¾µæŸ“çš„CPUæ•°+=1
+  InterlockedIncrement (&g_uSubvertedCPUs);  // ÒÑÇÖÈ¾µÄCPUÊı+=1
 
-  // ä¸€åˆ‡å‡†å¤‡å·¥ä½œå®Œæ¯•ï¼Œä½¿è¯¥CPUè¿›å…¥è™šæ‹Ÿæœº
+  // Ò»ÇĞ×¼±¸¹¤×÷Íê±Ï£¬Ê¹¸ÃCPU½øÈëĞéÄâ»ú
   __vmx_vmlaunch();
 
   // never reached
@@ -109,10 +109,10 @@ HvmSpitOutBluepill ()
     KIRQL OldIrql;
     CHAR i;
 
-    // éå†æ‰€æœ‰å¤„ç†å™¨
+    // ±éÀúËùÓĞ´¦ÀíÆ÷
     for (i = 0; i < KeNumberProcessors; i++)
     {
-        KeSetSystemAffinityThread ((KAFFINITY) ((ULONG_PTR)1 << i));  // å°†ä»£ç è¿è¡Œåœ¨æŒ‡å®šCPU
+        KeSetSystemAffinityThread ((KAFFINITY) ((ULONG_PTR)1 << i));  // ½«´úÂëÔËĞĞÔÚÖ¸¶¨CPU
         OldIrql = KeRaiseIrqlToDpcLevel ();
 
         VmxVmCall (NBP_HYPERCALL_UNLOAD);
@@ -131,13 +131,13 @@ HvmSwallowBluepill ()
     KIRQL OldIrql;
     CHAR i;
 
-    // éå†æ‰€æœ‰å¤„ç†å™¨
+    // ±éÀúËùÓĞ´¦ÀíÆ÷
     for (i = 0; i < KeNumberProcessors; i++)
     {
-        KeSetSystemAffinityThread ((KAFFINITY) ((ULONG_PTR)1 << i));  // å°†ä»£ç è¿è¡Œåœ¨æŒ‡å®šCPU
+        KeSetSystemAffinityThread ((KAFFINITY) ((ULONG_PTR)1 << i));  // ½«´úÂëÔËĞĞÔÚÖ¸¶¨CPU
         OldIrql = KeRaiseIrqlToDpcLevel ();
 
-        Status = CmSubvert (NULL);  // CmSubvertçš„æµç¨‹æ˜¯ä¿å­˜æ‰€æœ‰å¯„å­˜å™¨(é™¤äº†æ®µå¯„å­˜å™¨)çš„å†…å®¹åˆ°æ ˆé‡Œåï¼Œè°ƒç”¨HvmSubvertCpu
+        Status = CmSubvert (NULL);  // CmSubvertµÄÁ÷³ÌÊÇ±£´æËùÓĞ¼Ä´æÆ÷(³ıÁË¶Î¼Ä´æÆ÷)µÄÄÚÈİµ½Õ»Àïºó£¬µ÷ÓÃHvmSubvertCpu
 
         KeLowerIrql (OldIrql);
         KeRevertToUserAffinityThread ();
@@ -149,7 +149,7 @@ HvmSwallowBluepill ()
         }
     }
 
-    if (KeNumberProcessors != g_uSubvertedCPUs)  // å¦‚æœæ²¡æœ‰å¯¹æ¯ä¸ªæ ¸éƒ½ä¾µæŸ“æˆåŠŸï¼Œåˆ™æ’¤é”€æ›´æ”¹
+    if (KeNumberProcessors != g_uSubvertedCPUs)  // Èç¹ûÃ»ÓĞ¶ÔÃ¿¸öºË¶¼ÇÖÈ¾³É¹¦£¬Ôò³·Ïú¸ü¸Ä
     {
         HvmSpitOutBluepill ();
         return STATUS_UNSUCCESSFUL;

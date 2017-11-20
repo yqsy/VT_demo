@@ -334,59 +334,59 @@ typedef (__fastcall *pfnNtWriteVirtualMemory)(
     );
 typedef NTSTATUS(__fastcall*pfNtSetInformationThread)(HANDLE threadHandle, THREADINFOCLASS threadInformationClass, PVOID threadInformation, ULONG threadInformationLength);
 
-ULONG pslp_patch_size9 = 0;     //ObpCallPreOperationCallbacksè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte9 = NULL;    //ObpCallPreOperationCallbacksçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp9 = NULL;         //ObpCallPreOperationCallbacksçš„åŸå‡½æ•°
+ULONG pslp_patch_size9 = 0;     //ObpCallPreOperationCallbacks±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte9 = NULL;    //ObpCallPreOperationCallbacksµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp9 = NULL;         //ObpCallPreOperationCallbacksµÄÔ­º¯Êı
 
-ULONG pslp_patch_size10 = 0;        //ExGetCallBackBlockRoutineè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte10 = NULL;   //ExGetCallBackBlockRoutineçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp10 = NULL;            //ExGetCallBackBlockRoutineçš„åŸå‡½æ•°
+ULONG pslp_patch_size10 = 0;        //ExGetCallBackBlockRoutine±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte10 = NULL;   //ExGetCallBackBlockRoutineµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp10 = NULL;            //ExGetCallBackBlockRoutineµÄÔ­º¯Êı
 
-ULONG pslp_patch_size19 = 0;        //NtQueryInformationThreadè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte19 = NULL;   //NtQueryInformationThreadçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp19 = NULL;            //NtQueryInformationThreadçš„åŸå‡½æ•°
-
-
-ULONG pslp_patch_size20 = 0;        //ExCompareExchangeCallBackè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte20 = NULL;   //ExCompareExchangeCallBackçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp20 = NULL;            //ExCompareExchangeCallBackçš„åŸå‡½æ•°
+ULONG pslp_patch_size19 = 0;        //NtQueryInformationThread±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte19 = NULL;   //NtQueryInformationThreadµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp19 = NULL;            //NtQueryInformationThreadµÄÔ­º¯Êı
 
 
-ULONG pslp_patch_size21 = 0;        //proxyPsLookupThreadByThreadIdè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte21 = NULL;   //proxyPsLookupThreadByThreadIdçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp21 = NULL;            //proxyPsLookupThreadByThreadIdçš„åŸå‡½æ•°
+ULONG pslp_patch_size20 = 0;        //ExCompareExchangeCallBack±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte20 = NULL;   //ExCompareExchangeCallBackµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp20 = NULL;            //ExCompareExchangeCallBackµÄÔ­º¯Êı
 
 
-ULONG pslp_patch_size22 = 0;        //proxyPsLookupProcessByProcessIdè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte22 = NULL;   //proxyPsLookupProcessByProcessIdçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp22 = NULL;            //proxyPsLookupProcessByProcessIdçš„åŸå‡½æ•°
+ULONG pslp_patch_size21 = 0;        //proxyPsLookupThreadByThreadId±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte21 = NULL;   //proxyPsLookupThreadByThreadIdµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp21 = NULL;            //proxyPsLookupThreadByThreadIdµÄÔ­º¯Êı
 
 
-ULONG pslp_patch_size23 = 0;        //KiRestoreDebugRegisterStateè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte23 = NULL;   //KiRestoreDebugRegisterStateçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp23 = NULL;            //KiRestoreDebugRegisterStateçš„åŸå‡½æ•°
+ULONG pslp_patch_size22 = 0;        //proxyPsLookupProcessByProcessId±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte22 = NULL;   //proxyPsLookupProcessByProcessIdµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp22 = NULL;            //proxyPsLookupProcessByProcessIdµÄÔ­º¯Êı
 
 
-ULONG pslp_patch_size24= 0;     //KiSaveDebugRegisterStateè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte24 = NULL;   //KiSaveDebugRegisterStateçš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp24 = NULL;            //KiSaveDebugRegisterStateçš„åŸå‡½æ•°
+ULONG pslp_patch_size23 = 0;        //KiRestoreDebugRegisterState±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte23 = NULL;   //KiRestoreDebugRegisterStateµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp23 = NULL;            //KiRestoreDebugRegisterStateµÄÔ­º¯Êı
 
 
-ULONG pslp_patch_size25 = 0;        //RtlpCopyLegacyContextX86è¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte25 = NULL;   //RtlpCopyLegacyContextX86çš„å‰Nå­—èŠ‚æ•°ç»„
-PVOID ori_pslp25 = NULL;            //RtlpCopyLegacyContextX86çš„åŸå‡½æ•°
+ULONG pslp_patch_size24= 0;     //KiSaveDebugRegisterState±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte24 = NULL;   //KiSaveDebugRegisterStateµÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp24 = NULL;            //KiSaveDebugRegisterStateµÄÔ­º¯Êı
 
-ULONG pslp_patch_size26 = 0;        //pfKiAttachProcessè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte26 = NULL;   //pfKiAttachProcessçš„å‰Nå­—èŠ‚æ•°ç»„
-pfKiAttachProcess ori_pslp26 = NULL;            //pfKiAttachProcessçš„åŸå‡½æ•°
 
-ULONG pslp_patch_size27 = 0;        //ReadProcessMemoryè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte27 = NULL;   //ReadProcessMemoryçš„å‰Nå­—èŠ‚æ•°ç»„
-pfnNtReadVirtualMemory ori_pslp27 = NULL;           //ReadProcessMemoryçš„åŸå‡½æ•°
+ULONG pslp_patch_size25 = 0;        //RtlpCopyLegacyContextX86±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte25 = NULL;   //RtlpCopyLegacyContextX86µÄÇ°N×Ö½ÚÊı×é
+PVOID ori_pslp25 = NULL;            //RtlpCopyLegacyContextX86µÄÔ­º¯Êı
 
-ULONG pslp_patch_size28 = 0;        //WriteProcessMemoryè¢«ä¿®æ”¹äº†Nå­—èŠ‚
-PUCHAR pslp_head_n_byte28 = NULL;   //WriteProcessMemoryçš„å‰Nå­—èŠ‚æ•°ç»„
-pfnNtWriteVirtualMemory ori_pslp28 = NULL;          //WriteProcessMemoryçš„åŸå‡½æ•°
+ULONG pslp_patch_size26 = 0;        //pfKiAttachProcess±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte26 = NULL;   //pfKiAttachProcessµÄÇ°N×Ö½ÚÊı×é
+pfKiAttachProcess ori_pslp26 = NULL;            //pfKiAttachProcessµÄÔ­º¯Êı
+
+ULONG pslp_patch_size27 = 0;        //ReadProcessMemory±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte27 = NULL;   //ReadProcessMemoryµÄÇ°N×Ö½ÚÊı×é
+pfnNtReadVirtualMemory ori_pslp27 = NULL;           //ReadProcessMemoryµÄÔ­º¯Êı
+
+ULONG pslp_patch_size28 = 0;        //WriteProcessMemory±»ĞŞ¸ÄÁËN×Ö½Ú
+PUCHAR pslp_head_n_byte28 = NULL;   //WriteProcessMemoryµÄÇ°N×Ö½ÚÊı×é
+pfnNtWriteVirtualMemory ori_pslp28 = NULL;          //WriteProcessMemoryµÄÔ­º¯Êı
 
 
 ULONG64 RtlpCopyLegacyContextX86 = NULL;
@@ -450,18 +450,18 @@ __int64 __fastcall proxyObpCallPreOperationCallbacks(__int64 a1, __int64 a2, __i
     Padd = querylist(PmainList, PsGetCurrentProcessId(), PsGetCurrentProcess());
     if (Padd == NULL){
     
-        return ((pfObpCallPreOperationCallbacks)ori_pslp9)(a1, a2, a3);//ä¸æ˜¯æˆ‘ä»¬çš„è¿›ç¨‹æ“ä½œè¿›ç¨‹å¯¹è±¡å°±è°ƒç”¨åŸæ¥å‡½æ•°
+        return ((pfObpCallPreOperationCallbacks)ori_pslp9)(a1, a2, a3);//²»ÊÇÎÒÃÇµÄ½ø³Ì²Ù×÷½ø³Ì¶ÔÏó¾Íµ÷ÓÃÔ­À´º¯Êı
 
     
     }
     else{
-        return 0;//æ”¾è¡Œ
+        return 0;//·ÅĞĞ
     }
 
     
     
 
-    return ((pfObpCallPreOperationCallbacks)ori_pslp9)(a1, a2, a3);//ä¸æ˜¯æˆ‘ä»¬çš„è¿›ç¨‹æ“ä½œè¿›ç¨‹å¯¹è±¡å°±è°ƒç”¨åŸæ¥å‡½æ•°return 0;//æ”¾è¡Œ
+    return ((pfObpCallPreOperationCallbacks)ori_pslp9)(a1, a2, a3);//²»ÊÇÎÒÃÇµÄ½ø³Ì²Ù×÷½ø³Ì¶ÔÏó¾Íµ÷ÓÃÔ­À´º¯Êıreturn 0;//·ÅĞĞ
 }
 VOID proxyListFunc(_In_ HANDLE ParentId, _In_ HANDLE ProcessId, _In_ BOOLEAN Create){
     
@@ -573,7 +573,7 @@ NTSTATUS myNtSetInformationThread(HANDLE threadHandle, THREADINFOCLASS threadInf
 
             ExReleaseRundownProtection(&Thread->RundownProtect);
             //DbgPrint("thread: %p", Thread);
-            //ODè®¾ç½®çº¿ç¨‹ä¸Šä¸‹æ–‡çš„æ—¶å€™DRæˆ‘ä»¬è®¾ç½®æˆçº¿ç¨‹è‡ªå·±çš„
+            //ODÉèÖÃÏß³ÌÉÏÏÂÎÄµÄÊ±ºòDRÎÒÃÇÉèÖÃ³ÉÏß³Ì×Ô¼ºµÄ
             status = NtSetInformationThread(threadHandle, threadInformationClass, threadInformation, threadInformationLength);
             contex->Dr0=mycontex.Dr0;
             contex->Dr1 = mycontex.Dr1;
@@ -794,7 +794,7 @@ NTSTATUS __fastcall myNtQueryInformationThread(IN   HANDLE   ThreadHandle,
 
             ExReleaseRundownProtection(&Thread->RundownProtect);
             //DbgPrint("thread: %p", Thread);
-            //ODè®¾ç½®çº¿ç¨‹ä¸Šä¸‹æ–‡çš„æ—¶å€™DRæˆ‘ä»¬è®¾ç½®æˆçº¿ç¨‹è‡ªå·±çš„
+            //ODÉèÖÃÏß³ÌÉÏÏÂÎÄµÄÊ±ºòDRÎÒÃÇÉèÖÃ³ÉÏß³Ì×Ô¼ºµÄ
             status = orgNtQueryInformationThread(ThreadHandle, ThreadInformationClass, ThreadInformation, ThreadInformationLength, ReturnLength);
 
             
@@ -1316,13 +1316,13 @@ VOID RwWorkItem(
     if (Data->IsReadOrWrite)
     {
 
-        //è¯»
+        //¶Á
         Data->Status = PreadMem(Data->ProcessHandle, Data->BaseAddress, Data->Buffer, Data->BufferLength, Data->ReturnLength);
     }
     else
     {
 
-        //å†™
+        //Ğ´
 
         Data->Status = PwriteMem(Data->ProcessHandle, Data->BaseAddress, Data->Buffer, Data->BufferLength, Data->ReturnLength);
     }
@@ -1342,13 +1342,13 @@ VOID RW(PReadWriteR3MemData Data)
     if (Data->IsReadOrWrite)
     {
 
-    //è¯»
+    //¶Á
     //Data->Status = PreadMem(Data->ProcessHandle, Data->BaseAddress, Data->Buffer, Data->BufferLength, Data->ReturnLength);
     }
     else
     {
 
-    //å†™
+    //Ğ´
 
     //Data->Status = PwriteMem(Data->ProcessHandle, Data->BaseAddress, Data->Buffer, Data->BufferLength, Data->ReturnLength);
     }
@@ -1587,7 +1587,7 @@ ULONG __fastcall MyNtOpenProcess(
 
     if (IsSystemProcessCall())
     {
-        return  XNtOpenProcess(ProcessHandle, AccessMask, ObjectAttributes, ClientId);//è°ƒç”¨åŸå‡½æ•°
+        return  XNtOpenProcess(ProcessHandle, AccessMask, ObjectAttributes, ClientId);//µ÷ÓÃÔ­º¯Êı
 
     }
 
@@ -1600,7 +1600,7 @@ ULONG __fastcall MyNtOpenProcess(
         {
             if (pid==PsGetCurrentProcessId())
             {
-                return  XNtOpenProcess(ProcessHandle, AccessMask, ObjectAttributes, ClientId);//è°ƒç”¨åŸå‡½æ•°
+                return  XNtOpenProcess(ProcessHandle, AccessMask, ObjectAttributes, ClientId);//µ÷ÓÃÔ­º¯Êı
             }
             else{
 
@@ -1612,7 +1612,7 @@ ULONG __fastcall MyNtOpenProcess(
     }
     
 
-    return  XNtOpenProcess(ProcessHandle, AccessMask, ObjectAttributes, ClientId);//è°ƒç”¨åŸå‡½æ•°
+    return  XNtOpenProcess(ProcessHandle, AccessMask, ObjectAttributes, ClientId);//µ÷ÓÃÔ­º¯Êı
 
 }
 
@@ -1732,13 +1732,13 @@ NTSTATUS __fastcall  proxyPspSetContextThreadInternal(
 
 ULONG64 __fastcall proxyExGetCallBackBlockRoutine(ULONG64 a1){
     KIRQL oldirql = 0;
-    KeAcquireSpinLock(&local_lock, &oldirql);//åŠ é” ä¸åŠ ä¼šæœ‰äº›æ— è‰¯é©±åŠ¨æ¥å›æ³¨å†Œ ä¼šè“çš„å¾ˆéš¾çœ‹
+    KeAcquireSpinLock(&local_lock, &oldirql);//¼ÓËø ²»¼Ó»áÓĞĞ©ÎŞÁ¼Çı¶¯À´»Ø×¢²á »áÀ¶µÄºÜÄÑ¿´
 
     ULONG64 result = *(ULONG64 *)(a1 + 8);
 
     if (result>KrnlBase && result <(KrnlBase+KrnlSize))
     {
-        DbgPrint("ç³»ç»Ÿè°ƒç”¨è·³è¿‡ï¼");//æœ‰æ—¶å€™ä¼šæœ‰ç³»ç»Ÿçš„å›è°ƒ
+        DbgPrint("ÏµÍ³µ÷ÓÃÌø¹ı£¡");//ÓĞÊ±ºò»áÓĞÏµÍ³µÄ»Øµ÷
         KeReleaseSpinLock(&local_lock, oldirql);
         return result;
     }
@@ -1748,18 +1748,18 @@ ULONG64 __fastcall proxyExGetCallBackBlockRoutine(ULONG64 a1){
     if (Padd!=NULL)
     {
         KeReleaseSpinLock(&local_lock, oldirql);
-        return proxyListFunc;//æˆ‘ä»¬çš„ç¨‹åºåœ¨è°ƒç”¨ è¿”å›ä¼ªå›è°ƒ
+        return proxyListFunc;//ÎÒÃÇµÄ³ÌĞòÔÚµ÷ÓÃ ·µ»ØÎ±»Øµ÷
 
-        //return *(ULONG64 *)(a1 + 8); //è¿™é‡Œæ˜¯è¿”å›æ­£ç¡®çš„å›è°ƒå‡½æ•°~ 
+        //return *(ULONG64 *)(a1 + 8); //ÕâÀïÊÇ·µ»ØÕıÈ·µÄ»Øµ÷º¯Êı~ 
     }
     if (!MmIsAddressValid(result))
     {
         KeReleaseSpinLock(&local_lock, oldirql);
-        return proxyListFunc;//å…å¾—æ— è‰¯é©±åŠ¨å¿˜äº†å¸è½½å›è°ƒ è¿”å›ä¼ªå›è°ƒ
+        return proxyListFunc;//ÃâµÃÎŞÁ¼Çı¶¯ÍüÁËĞ¶ÔØ»Øµ÷ ·µ»ØÎ±»Øµ÷
 
     }
     KeReleaseSpinLock(&local_lock, oldirql);
-    return result; //è¿™é‡Œæ˜¯è¿”å›æ­£ç¡®çš„å›è°ƒå‡½æ•°~ 
+    return result; //ÕâÀïÊÇ·µ»ØÕıÈ·µÄ»Øµ÷º¯Êı~ 
 
 
 }

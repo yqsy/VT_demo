@@ -254,7 +254,7 @@ typedef struct _VMX_FEATURES {
     unsigned DS_CPL      :1;        // CPL qualified Debug Store
     unsigned VMX         :1;        // Virtual Machine Technology
     unsigned RES2        :1;
-    unsigned EST         :1;        // Enhanced Intel漏 Speedstep Technology
+    unsigned EST         :1;        // Enhanced Intel© Speedstep Technology
     unsigned TM2         :1;        // Thermal monitor 2
     unsigned SSSE3       :1;        // SSSE3 extensions
     unsigned CID         :1;        // L1 context ID
